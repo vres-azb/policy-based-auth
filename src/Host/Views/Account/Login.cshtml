@@ -1,0 +1,35 @@
+﻿@{
+    ViewData["Title"] = "Login";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<div class="row">
+    <div class="col-md-8">
+        <section>
+            <form asp-controller="Account" asp-action="Login" asp-route-returnurl="@ViewData["ReturnUrl"]" method="post" class="form-horizontal" role="form">
+                <div class="form-group">
+                    <label class="col-md-2 control-label">Username:</label>
+                    <div class="col-md-10">
+                        <input type="text" name="username" autofocus />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="col-md-offset-2 col-md-10">
+                        <button type="submit" class="btn btn-default">Sign in</button>
+                    </div>
+                </div>
+
+                <div>
+                    <p>Available users:</p>
+                    <ul>
+                        <li>alice (Manager role)</li>
+                        <li>bob (Staff role)</li>
+                        <li>Any other name is an Appraiser role</li>
+                    </ul>
+                </div>
+            </form>
+        </section>
+    </div>
+</div>

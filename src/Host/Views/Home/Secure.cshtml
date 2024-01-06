@@ -1,0 +1,88 @@
+﻿@{
+    ViewData["Title"] = "Authorized?";
+    ViewData["ClaimsSource"] = "";
+}
+
+@model FakeRepos.PolicyResult
+
+<h1>== Logged in User Claims: <span style="color:blue;">@User.Identity.Name</span> == </h1>
+@foreach (var id in User.Identities)
+{
+    if (id.AuthenticationType.Contains("password"))
+    {
+        ViewData["ClaimsSource"] = "OIDC (Azure B2C, IBM, VA Access, Identity Server, Auth0, etc.)";
+    }
+    else if (id.AuthenticationType.Contains("PolicyServerMiddleware"))
+    {
+        ViewData["ClaimsSource"] = "AuthZ Provider / Policy Service";
+    }
+
+    <h3>Claims from: <span style="color:deeppink;">@ViewData["ClaimsSource"]</span></h3>
+    <dl>
+        @foreach (var claim in id.Claims)
+        {
+            <dt>@claim.Type</dt>
+            <dd>@claim.Value</dd>
+        }
+    </dl>
+}
+
+<hr />
+
+@if (Model != null)
+{
+    <h1>== Policy Results ==</h1>
+    @if (Model.Roles.Any())
+    {
+        <h3 style="color:coral;">Application specific Roles</h3>
+        <ul>
+            @foreach (var role in Model.Roles)
+            {
+                <li>@role</li>
+            }
+        </ul>
+    }
+
+    @if (Model.Permissions.Any())
+    {
+        <h3 style="color:coral;">Permissions (application specific) per rol</h3>
+        <ul>
+            @foreach (var perm in Model.Permissions)
+            {
+                <li>@perm</li>
+            }
+        </ul>
+    }
+}
+
+<hr />
+
+<h2><u>All Permissions list</u> for the iVal Application</h2>
+
+<ul>
+    <li>
+        <p>
+            <a asp-action="Staff">Staff permissions (View Team Orders and Export to PDF)</a>
+        </p>
+    </li>
+    <li>
+        <p>
+            <a asp-action="DeleteOrders">Delete Team Orders</a>
+        </p>
+    </li>
+    <li>
+        <p>
+            <a asp-action="CanDeleteMyOwnOrders">Delete My own Order</a>
+        </p>
+    </li>
+    <li>
+        <p>
+            <a asp-action="CanViewOrders">View Orders</a>
+        </p>
+    </li>
+    <li>
+        <p>
+            <a asp-action="CanExportOrderToPDF">Export Order To PDF</a>
+        </p>
+    </li>
+</ul>
