@@ -67,7 +67,7 @@ jobs:
             echo '
             **Markdown**
             ```markdown' >> CLONE.md
-            echo "[![GitHub Cloned]($shields$url&logo=github)](${{ github.repository }})" >> CLONE.md
+            echo "[![GitHub Cloned]($shields$url&logo=github)](https://github.com/${{ github.repository }})" >> CLONE.md
             echo '
             ```
             
