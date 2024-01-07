@@ -65,18 +65,16 @@ jobs:
             url="https://gist.githubusercontent.com/${{ github.actor }}/${{ steps.set_id.outputs.GIST }}/raw/clone.json"
             echo ''> CLONE.md
             echo '
-            
             **Markdown**
             
             ```markdown' >> CLONE.md
             echo "[![GitHub Cloned]($shields$url&logo=github)](https://github.com/${{ github.repository }})" >> CLONE.md
-            echo '
             ```
             
             git add CLONE.md
             git config --global user.name "GitHub Action"
             git config --global user.email "action@github.com"
-            git commit -m "create clone count badge"
+            git commit -m "create cloned repo count badge"
           fi
 
       - name: Push
