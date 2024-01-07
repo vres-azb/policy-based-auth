@@ -65,7 +65,9 @@ jobs:
             url="https://gist.githubusercontent.com/${{ github.actor }}/${{ steps.set_id.outputs.GIST }}/raw/clone.json"
             echo ''> CLONE.md
             echo '
+            
             **Markdown**
+            
             ```markdown' >> CLONE.md
             echo "[![GitHub Cloned]($shields$url&logo=github)](https://github.com/${{ github.repository }})" >> CLONE.md
             echo '
