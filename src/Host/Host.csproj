@@ -8,5 +8,8 @@
     <ProjectReference Include="..\PolicyServer.Local\PolicyServer.Local.csproj">
       <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
     </ProjectReference>
+    <ProjectReference Include="..\PolicyBased.Contracts\PolicyBased.Contracts.csproj">
+      <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
+    </ProjectReference>
   </ItemGroup>
 </Project>

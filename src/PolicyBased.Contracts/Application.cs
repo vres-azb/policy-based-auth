@@ -1,6 +1,6 @@
 using System;
 
-namespace FakeRepos
+namespace PolicyBased.Contracts
 {
     /// <summary>
     /// Represents an instance of a Business Application

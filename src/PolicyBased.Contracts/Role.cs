@@ -1,6 +1,6 @@
 ﻿using System.Security.Claims;
 
-namespace FakeRepos
+namespace PolicyBased.Contracts
 {
     /// <summary>
     /// Models an application role
@@ -31,7 +31,8 @@ namespace FakeRepos
         /// </value>
         public List<string> IdentityRoles { get; set; } = new List<string>();
 
-        internal bool Evaluate(ClaimsPrincipal user)
+        // TODO: this MUST be internal scope, making this public for demo
+        public bool Evaluate(ClaimsPrincipal user)
         {
             if (user == null) throw new ArgumentNullException(nameof(user));
 

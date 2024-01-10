@@ -3,7 +3,8 @@
     ViewData["ClaimsSource"] = "";
 }
 
-@model FakeRepos.PolicyResult
+@using PolicyBased.Contracts
+@model PolicyResult
 
 <h1>== Logged in User Claims: <span style="color:blue;">@User.Identity.Name</span> == </h1>
 @foreach (var id in User.Identities)

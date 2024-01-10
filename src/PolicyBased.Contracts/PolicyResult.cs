@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace FakeRepos
+namespace PolicyBased.Contracts
 {
     /// <summary>
     /// The result of a policy evaluation

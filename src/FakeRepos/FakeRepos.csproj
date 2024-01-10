@@ -7,11 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Contracts\" />
     <None Remove="Services\" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Contracts\" />
     <Folder Include="Services\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\PolicyBased.Contracts\PolicyBased.Contracts.csproj" />
   </ItemGroup>
 </Project>

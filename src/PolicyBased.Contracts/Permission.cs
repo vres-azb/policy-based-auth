@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace FakeRepos
+namespace PolicyBased.Contracts
 {
     /// <summary>
     /// Models a permission
@@ -25,7 +25,8 @@ namespace FakeRepos
         /// </value>
         public List<string> Roles { get; set; } = new List<string>();
 
-        internal bool Evaluate(IEnumerable<string> roles)
+        // TODO: this MUST be internal scope, making this public for demo
+        public bool Evaluate(IEnumerable<string> roles)
         {
             if (roles == null) throw new ArgumentNullException(nameof(roles));
 

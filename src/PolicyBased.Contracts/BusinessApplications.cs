@@ -1,7 +1,7 @@
 using System.Data;
 using System.Security.Claims;
 
-namespace FakeRepos
+namespace PolicyBased.Contracts
 {
     /// <summary>
     /// The Business Applications
@@ -10,19 +10,20 @@ namespace FakeRepos
     {
 
         public int Id { get; set; }
-        
+
         /// <summary>
         /// The Busines Applications collection
         /// </summary>
         public IEnumerable<Application> Applications { get; set; }
 
+        // TODO: this MUST be internal scope, making this public for demo
         public Task<PolicyResult> EvaluateAsync(ClaimsPrincipal user)
         {
             if (user == null) throw new ArgumentNullException(nameof(user));
 
             // TODO: refactor this later...
-            Application app = this.Applications.FirstOrDefault(x=>x.Id == 1);
-            Policy policy = app.Policies.FirstOrDefault(x=>x.Id == 1);
+            Application app = this.Applications.FirstOrDefault(x => x.Id == 1);
+            Policy policy = app.Policies.FirstOrDefault(x => x.Id == 1);
 
 
             var roles = policy.Roles.Where(x => x.Evaluate(user)).Select(x => x.Name).ToArray();

@@ -1,6 +1,6 @@
 ﻿using System.Security.Claims;
 
-namespace FakeRepos
+namespace PolicyBased.Contracts
 {
     /// <summary>
     /// Models a policy
@@ -32,12 +32,13 @@ namespace FakeRepos
         /// The permissions.
         /// </value>
         public List<Permission> Permissions { get; set; } = new List<Permission>();
-        
+
+        // TODO: this MUST be internal scope, making this public for demo
         public Task<PolicyResult> EvaluateAsync(ClaimsPrincipal user)
         {
             if (user == null) throw new ArgumentNullException(nameof(user));
 
-            var roles = Roles.Where(x=> x.Evaluate(user)).Select(x => x.Name).ToArray();
+            var roles = Roles.Where(x => x.Evaluate(user)).Select(x => x.Name).ToArray();
             var permissions = Permissions.Where(x => x.Evaluate(roles)).Select(x => x.Name).ToArray();
 
             var result = new PolicyResult()

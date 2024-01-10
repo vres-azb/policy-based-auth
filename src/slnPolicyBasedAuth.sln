@@ -9,6 +9,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PolicyServer.Local", "Polic
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FakeRepos", "FakeRepos\FakeRepos.csproj", "{698EA68B-EE5E-4AA2-B005-E4B8C2144DE3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PolicyBased.Tests", "..\test\PolicyBased.Tests\PolicyBased.Tests.csproj", "{245341B1-BB17-48DD-B52C-8CD59FDA57AB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PolicyBased.Contracts", "PolicyBased.Contracts\PolicyBased.Contracts.csproj", "{AA93B2B0-7EB7-4117-9E68-AAFEF8FACA92}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,5 +34,13 @@ Global
 		{698EA68B-EE5E-4AA2-B005-E4B8C2144DE3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{698EA68B-EE5E-4AA2-B005-E4B8C2144DE3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{698EA68B-EE5E-4AA2-B005-E4B8C2144DE3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{245341B1-BB17-48DD-B52C-8CD59FDA57AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{245341B1-BB17-48DD-B52C-8CD59FDA57AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{245341B1-BB17-48DD-B52C-8CD59FDA57AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{245341B1-BB17-48DD-B52C-8CD59FDA57AB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AA93B2B0-7EB7-4117-9E68-AAFEF8FACA92}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AA93B2B0-7EB7-4117-9E68-AAFEF8FACA92}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AA93B2B0-7EB7-4117-9E68-AAFEF8FACA92}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AA93B2B0-7EB7-4117-9E68-AAFEF8FACA92}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

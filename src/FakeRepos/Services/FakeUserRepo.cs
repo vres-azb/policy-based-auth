@@ -1,15 +1,18 @@
 ﻿using System.Security.Claims;
+using PolicyBased.Contracts;
 
 namespace FakeRepos
 {
     public interface IFakeRepository
     {
+        ClaimsPrincipal CreateUser(string sub, IEnumerable<string> roles = null, IEnumerable<Claim> claims = null);
         ClaimsPrincipal RetrieveUser(string userName);
         BusinessApplications RetrieveBusinessApps();
     }
 
     public class FakeRepository : IFakeRepository
     {
+
         public ClaimsPrincipal RetrieveUser(string userName)
         {
             ClaimsPrincipal result = null;
@@ -235,6 +238,27 @@ namespace FakeRepos
             };
 
             return result;
+        }
+
+        public ClaimsPrincipal CreateUser(string sub, IEnumerable<string> roles = null, IEnumerable<Claim> claims = null)
+        {
+            var list = new List<Claim>();
+            list.Add(new Claim("sub", sub)); // per the OIDC spec sub is the subject identifier
+
+            if (roles != null)
+            {
+                list.AddRange(roles.Select(x => new Claim("role", x)));
+            }
+
+            if (claims != null)
+            {
+                list.AddRange(claims);
+            }
+
+            var ci = new ClaimsIdentity(list, "pwd", "name", "role");
+            var cp = new ClaimsPrincipal(ci);
+
+            return cp;
         }
     }
 }

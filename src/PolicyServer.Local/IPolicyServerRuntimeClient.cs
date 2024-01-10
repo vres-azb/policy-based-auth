@@ -1,6 +1,6 @@
 ﻿using System.Security.Claims;
 using System.Threading.Tasks;
-using FakeRepos;
+using PolicyBased.Contracts;
 
 namespace PolicyServer.Runtime.Client
 {
