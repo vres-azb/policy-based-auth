@@ -10,7 +10,7 @@ namespace PolicyBased.Contracts
         /// <summary>
         /// Represents an Application Identifier.
         /// </summary>
-        public int Id { get; set; }
+        public long Id { get; set; }
 
         /// <summary>
         /// The name of the application.

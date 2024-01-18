@@ -1,0 +1,55 @@
+﻿@page "/"
+@using PolicyBased.Infra.Models
+@using PolicyBased.Infra.Persistence.Repositories
+@using PolicyDtos = PolicyBased.Contracts;
+
+@inject IUserRepo UserRepo;
+<PageTitle>Index</PageTitle>
+
+Welcome to Policy Server..
+
+<FluentDataGrid Items="@policyList" ItemKey="(a=>a.Id)" Style="width:850px;">
+    <EmptyContent>No policies</EmptyContent>
+    <ChildContent>
+        @* <PropertyColumn Property="@(a => a.Id)" Sortable="true" /> *@
+        <TemplateColumn Title="Actions">
+            <FluentButton>EDIT</FluentButton>
+        </TemplateColumn>
+        <PropertyColumn Align="Align.Start" Property="@(a => a.Name)" Style="width:80px;" Sortable="true" />
+        <TemplateColumn Style="width:600px;" Title="Policy" Context="policyContext">
+            <FluentDataGrid Items="@policyContext.Policies.AsQueryable()" GenerateHeader="GenerateHeaderOption.None">
+                <PropertyColumn Property="@(p => p.Name)" Sortable="true" />
+                <TemplateColumn Context="permContext">
+                    @{
+                        var perms = permContext.Permissions.AsQueryable();
+                    }
+                    <FluentDataGrid Items="@perms">
+                        <PropertyColumn Property="@(p => p.Name)" Title="Permission" Sortable="true" />
+                        <TemplateColumn Title="Roles">
+                            @{
+                                string[] roles = permContext.Roles.Select(a => a.Name).ToArray();
+                                string roleNames = string.Join(", ", roles);
+                            }
+                            <FluentLabel>@roleNames</FluentLabel>
+                            </TemplateColumn>
+
+
+                        </FluentDataGrid>
+                    </TemplateColumn>
+
+                </FluentDataGrid>
+            </TemplateColumn>
+        </ChildContent>
+    </FluentDataGrid>
+
+    @code {
+    IQueryable<PolicyDtos.Application>? policyList = null;
+    int currentAppId;
+    protected override async Task OnInitializedAsync()
+    {
+        var allPolicies = await UserRepo.GetPolicies();
+        policyList = allPolicies.AsQueryable();
+    }
+
+   
+}

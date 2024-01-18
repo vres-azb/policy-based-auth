@@ -3,23 +3,24 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Host", "Host\Host.csproj", "{B38BDA95-21E3-49F9-BC7B-3AAF66C1EE49}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Host", "Host\Host.csproj", "{B38BDA95-21E3-49F9-BC7B-3AAF66C1EE49}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PolicyServer.Local", "PolicyServer.Local\PolicyServer.Local.csproj", "{ECE6CF4E-DC2A-4BAC-AACA-7961B24FE32E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PolicyServer.Local", "PolicyServer.Local\PolicyServer.Local.csproj", "{ECE6CF4E-DC2A-4BAC-AACA-7961B24FE32E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FakeRepos", "FakeRepos\FakeRepos.csproj", "{698EA68B-EE5E-4AA2-B005-E4B8C2144DE3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FakeRepos", "FakeRepos\FakeRepos.csproj", "{698EA68B-EE5E-4AA2-B005-E4B8C2144DE3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PolicyBased.Tests", "..\test\PolicyBased.Tests\PolicyBased.Tests.csproj", "{245341B1-BB17-48DD-B52C-8CD59FDA57AB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PolicyBased.Tests", "..\test\PolicyBased.Tests\PolicyBased.Tests.csproj", "{245341B1-BB17-48DD-B52C-8CD59FDA57AB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PolicyBased.Contracts", "PolicyBased.Contracts\PolicyBased.Contracts.csproj", "{AA93B2B0-7EB7-4117-9E68-AAFEF8FACA92}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PolicyBased.Contracts", "PolicyBased.Contracts\PolicyBased.Contracts.csproj", "{AA93B2B0-7EB7-4117-9E68-AAFEF8FACA92}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PolicyBased.Infra", "PolicyBased.Infra\PolicyBased.Infra.csproj", "{54686AE8-175E-4944-8D8F-433D73DEF239}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AuthAdminUI", "AuthAdminUI\AuthAdminUI.csproj", "{252C03E8-DEE5-46EB-94A2-21F9818A1271}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{B38BDA95-21E3-49F9-BC7B-3AAF66C1EE49}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -42,5 +43,19 @@ Global
 		{AA93B2B0-7EB7-4117-9E68-AAFEF8FACA92}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AA93B2B0-7EB7-4117-9E68-AAFEF8FACA92}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AA93B2B0-7EB7-4117-9E68-AAFEF8FACA92}.Release|Any CPU.Build.0 = Release|Any CPU
+		{54686AE8-175E-4944-8D8F-433D73DEF239}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{54686AE8-175E-4944-8D8F-433D73DEF239}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{54686AE8-175E-4944-8D8F-433D73DEF239}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{54686AE8-175E-4944-8D8F-433D73DEF239}.Release|Any CPU.Build.0 = Release|Any CPU
+		{252C03E8-DEE5-46EB-94A2-21F9818A1271}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{252C03E8-DEE5-46EB-94A2-21F9818A1271}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{252C03E8-DEE5-46EB-94A2-21F9818A1271}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{252C03E8-DEE5-46EB-94A2-21F9818A1271}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {2CE25D16-DA15-45AE-8E1D-316E517D7C4E}
 	EndGlobalSection
 EndGlobal
