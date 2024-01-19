@@ -1,0 +1,36 @@
+﻿ @inject NavigationManager navManager
+
+ 
+<FluentHeader Style="height:50px;">
+    <FluentStack Orientation="Orientation.Horizontal" VerticalAlignment="VerticalAlignment.Center">
+        <div><FluentIcon Value="@(new Icons.Regular.Size24.BotSparkle())" Color="Color.Fill" Slot="start" /> </div>
+        <div style="width: 200px;">Policy Server</div>
+        <FluentSpacer Width="350" />
+        <div>
+            <FluentSearch Style="width:200px;" Placeholder="Search site" />
+        </div>
+        <FluentStack  Orientation="Orientation.Horizontal" VerticalAlignment="VerticalAlignment.Center" HorizontalAlignment="HorizontalAlignment.End">
+            <FluentCounterBadge Count="5" Appearance="Appearance.Lightweight">
+                <FluentButton Appearance="Appearance.Accent">
+                    <FluentIcon Value="@(new Icons.Regular.Size32.Alert())" Color="@Color.Fill" />
+                </FluentButton>
+            </FluentCounterBadge>
+            <FluentSpacer Width="10" />
+        </FluentStack>
+    </FluentStack>
+</FluentHeader>
+
+
+@code {
+    bool open = false;
+    bool profile = false;
+    private void NavToSettings()
+    {
+        navManager.NavigateTo("/");
+    }
+    
+    private void NavToProfile(string href)
+    {
+        navManager.NavigateTo(href);
+    }
+}

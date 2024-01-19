@@ -1,4 +1,6 @@
-﻿<AuthorizeView>
+﻿ @inject NavigationManager navManager
+
+<AuthorizeView>
     <Authorized>
         <a href="Identity/Account/Manage">Hello, @context.User.Identity?.Name!</a>
         <form method="post" action="Identity/Account/LogOut">
@@ -6,7 +8,35 @@
         </form>
     </Authorized>
     <NotAuthorized>
-        <a href="Identity/Account/Register">Register</a>
-        <a href="Identity/Account/Login">Log in</a>
+        <FluentHeader Style="height:50px;">
+            <FluentStack Orientation="Orientation.Horizontal" VerticalAlignment="VerticalAlignment.Center">
+                <div style="width: 200px;">Policy Server</div>
+                <FluentSpacer Width="350" />
+                <FluentStack Orientation="Orientation.Horizontal" VerticalAlignment="VerticalAlignment.Center" HorizontalAlignment="HorizontalAlignment.End">
+                    <FluentButton Appearance="Appearance.Accent">
+                        Login
+                    </FluentButton>
+                    <FluentSpacer Width="10" />
+                    <FluentButton Appearance="Appearance.Accent">
+                        Register
+                    </FluentButton>
+                </FluentStack>
+            </FluentStack>
+        </FluentHeader>
+
     </NotAuthorized>
 </AuthorizeView>
+
+@code {
+    bool open = false;
+    bool profile = false;
+    private void NavToSettings()
+    {
+        navManager.NavigateTo("/");
+    }
+
+    private void NavToProfile(string href)
+    {
+        navManager.NavigateTo(href);
+    }
+}

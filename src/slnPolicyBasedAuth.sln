@@ -15,7 +15,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PolicyBased.Contracts", "Po
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PolicyBased.Infra", "PolicyBased.Infra\PolicyBased.Infra.csproj", "{54686AE8-175E-4944-8D8F-433D73DEF239}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AuthAdminUI", "AuthAdminUI\AuthAdminUI.csproj", "{252C03E8-DEE5-46EB-94A2-21F9818A1271}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AuthAdminUI", "AuthAdminUI\AuthAdminUI.csproj", "{252C03E8-DEE5-46EB-94A2-21F9818A1271}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

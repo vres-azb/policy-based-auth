@@ -1,0 +1,137 @@
+﻿@page "/policies/edit"
+@using PolicyBased.Infra.Models
+@using PolicyBased.Infra.Persistence.Repositories
+@using PolicyDtos = PolicyBased.Infra.Dtos;
+
+@inject IUserRepo UserRepo;
+
+<FluentBreadcrumb>
+    <FluentBreadcrumbItem Href="/">
+        Policies
+    </FluentBreadcrumbItem>
+    <FluentBreadcrumbItem Href="policies/edit">
+        Edit
+    </FluentBreadcrumbItem>
+</FluentBreadcrumb>
+
+<FluentStack Orientation="Orientation.Horizontal">
+
+    <FluentStack Orientation="Orientation.Vertical" Style="width:50%;" HorizontalAlignment="HorizontalAlignment.Left">
+        <FluentLabel Typo="Typography.PaneHeader"> Permissions </FluentLabel>
+        <FluentDataGrid Items="permList" Style="width:400px;">
+            <EmptyContent>No policies</EmptyContent>
+            <ChildContent>
+                <PropertyColumn Align="Align.Start" Property="@(a => a.Name)" Style="width:250px;" Sortable="true" />
+
+                <TemplateColumn Title="Actions" Style="width:200px;" Context="permContext">
+                    <FluentButton IconStart="@(new Icons.Regular.Size24.Edit())" @onclick="@((p) => EditPermission(permContext.Name))"></FluentButton>
+                    @* <FluentButton IconStart="@(new Icons.Regular.Size24.Delete())" @onclick="@((p) => DeletePolicy(roleContext.Name))"></FluentButton> *@
+                </TemplateColumn>
+            </ChildContent>
+        </FluentDataGrid>
+    </FluentStack>
+
+    @if (showRolePanel)
+    {
+        <FluentStack Orientation="Orientation.Vertical" HorizontalAlignment="HorizontalAlignment.Left">
+            <FluentLabel Typo="Typography.PaneHeader"> Roles </FluentLabel>
+            <FluentDataGrid Items="permRoleList" Style="width:500px;">
+                <EmptyContent>No Roles</EmptyContent>
+                <ChildContent>
+                    <PropertyColumn Align="Align.Start" Property="@(a => a.Name)" Style="width:350px;" Sortable="true" />
+                    <TemplateColumn Title="Checked?" Style="width:100px;">
+                        <FluentCheckbox @bind-Value="context.IsSelected"></FluentCheckbox>
+                    </TemplateColumn>
+                    <TemplateColumn Title="Actions" Style="width:200px;" Context="roleContext">
+                        <FluentButton IconStart="@(new Icons.Regular.Size24.Edit())" @onclick="@((p) => EditRole(roleContext.Name))"></FluentButton>
+                        <FluentButton IconStart="@(new Icons.Regular.Size24.Delete())" @onclick="@((p) => DeleteRole(roleContext.Name))"></FluentButton>
+                    </TemplateColumn>
+
+                </ChildContent>
+            </FluentDataGrid>
+
+            @if (showUserPanel)
+            {
+                <FluentLabel Typo="Typography.PaneHeader"> Users </FluentLabel>
+                <FluentDataGrid Items="roleUsers" Style="width:500px;">
+                    <EmptyContent>No Users</EmptyContent>
+                    <ChildContent>
+                        <PropertyColumn Align="Align.Start" Property="@(a => a.UserId)" Style="width:350px;" Sortable="true" />
+                        <TemplateColumn Title="Checked?" Style="width:100px;">
+                            <FluentCheckbox @bind-Value="context.IsSelected"></FluentCheckbox>
+                        </TemplateColumn>
+                        <TemplateColumn Title="Actions" Style="width:200px;" Context="userContext">
+                            <FluentButton IconStart="@(new Icons.Regular.Size24.Edit())"></FluentButton>
+                            <FluentButton IconStart="@(new Icons.Regular.Size24.Delete())"></FluentButton>
+                        </TemplateColumn>
+                    </ChildContent>
+                </FluentDataGrid>
+            }
+        </FluentStack>
+    }
+</FluentStack>
+@code {
+    PolicyDtos.Policy dataPolicy = new PolicyDtos.Policy();
+    IQueryable<PolicyDtos.Subject> roleUsers = null;
+    IQueryable<PolicyDtos.Role> permRoleList = null;
+    IQueryable<PolicyDtos.Permission> permList = null;
+    private bool showRolePanel = false;
+    private bool showUserPanel = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var allPolicies = await UserRepo.GetPolicies();
+        dataPolicy = allPolicies.FirstOrDefault().Policies.FirstOrDefault();
+        permList = dataPolicy.Permissions.AsQueryable();
+    }
+
+    public async Task EditPermission(string permName)
+    {
+        showRolePanel = true;
+        showUserPanel = false;
+
+        var allRoles = dataPolicy.Roles;
+        var permRoles = dataPolicy.Permissions.FirstOrDefault(a => a.Name == permName).Roles;
+        foreach (var role in allRoles)
+        {
+            role.IsSelected = permRoles.Any(x => x == role.Name);
+        }
+        permRoleList = allRoles.AsQueryable();
+        //roleUsers = dataPolicy.Roles.FirstOrDefault(a => a.Name == roleName).Subjects.AsQueryable() ?? Enumerable.Empty<string>().AsQueryable();
+    }
+
+    public async Task EditRole(string roleName)
+    {
+        showUserPanel = true;
+        var allUsers = await UserRepo.GetAllUsers();
+        foreach (var u in allUsers)
+        {
+            u.IsSelected = permRoleList.FirstOrDefault(a => a.Name == roleName).Subjects.Any(x => x == u.UserId);
+        }
+        roleUsers = allUsers.AsQueryable();
+    }
+
+    public async Task DeleteRole(string roleName)
+    {
+        // var dialog = await dialogService.ShowConfirmationAsync($"Do you want to delete the role {roleName}?", "Yup", "Nope", "Delete Role");
+        // var result = await dialog.Result;
+        // var canceled = result.Cancelled;
+
+        // if (!canceled)
+        // {
+        //     var isDeleted = true;//await dataService.DeleteBatch(batchId);
+        //     toastService.ClearAll();
+        //     if (isDeleted)
+        //     {
+        //         toastService.ShowSuccess($"{batchId} deleted", 5000);
+
+        //         var siteData = await dataService.GetBatches();
+        //         siteList = siteData.AsQueryable();
+        //     }
+        //     else
+        //     {
+        //         toastService.ShowError($"Error on deleting the batch {batchId}", 5000);
+        //     }
+        // }
+    }
+}

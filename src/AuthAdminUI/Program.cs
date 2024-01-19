@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Fast.Components.FluentUI;
 using PolicyBased.Infra.Persistence.Context;
 using PolicyBased.Infra.Persistence.Repositories;
 
@@ -29,6 +30,7 @@ namespace AuthAdminUI
             builder.Services.AddServerSideBlazor();
             builder.Services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<AuthAdminUIUser>>();
             builder.Services.AddSingleton<WeatherForecastService>();
+            builder.Services.AddFluentUIComponents();
             var services = builder.Services;
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddSingleton<IDataContextFactory, DataContextFactory>();

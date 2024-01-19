@@ -1,30 +1,36 @@
 ﻿@page "/"
 @using PolicyBased.Infra.Models
 @using PolicyBased.Infra.Persistence.Repositories
-@using PolicyDtos = PolicyBased.Contracts;
+@using PolicyDtos = PolicyBased.Infra.Dtos;
 
 @inject IUserRepo UserRepo;
-<PageTitle>Index</PageTitle>
+<PageTitle>Policies</PageTitle>
 
-Welcome to Policy Server..
+<FluentBreadcrumb>
+    <FluentBreadcrumbItem Href="#">
+        <h5>
+            Policies
+        </h5>
+    </FluentBreadcrumbItem>
+</FluentBreadcrumb>
 
-<FluentDataGrid Items="@policyList" ItemKey="(a=>a.Id)" Style="width:850px;">
+<FluentDataGrid Items="@policyList" ItemKey="(a=>a.Id)" Style="width:870px;" ResizableColumns="false">
     <EmptyContent>No policies</EmptyContent>
     <ChildContent>
-        @* <PropertyColumn Property="@(a => a.Id)" Sortable="true" /> *@
         <TemplateColumn Title="Actions">
-            <FluentButton>EDIT</FluentButton>
+            <FluentAnchor Href="/Policies/Edit" IconStart="@(new Icons.Regular.Size24.Edit())">
+            </FluentAnchor>
         </TemplateColumn>
         <PropertyColumn Align="Align.Start" Property="@(a => a.Name)" Style="width:80px;" Sortable="true" />
-        <TemplateColumn Style="width:600px;" Title="Policy" Context="policyContext">
-            <FluentDataGrid Items="@policyContext.Policies.AsQueryable()" GenerateHeader="GenerateHeaderOption.None">
-                <PropertyColumn Property="@(p => p.Name)" Sortable="true" />
+        <TemplateColumn Style="width:700px;" Title="Policy" Context="policyContext" Align="Align.Start">
+            <FluentDataGrid Items="@policyContext.Policies.AsQueryable()" ResizableColumns="false" GenerateHeader="GenerateHeaderOption.None">
+                <PropertyColumn Property="@(p => p.Name)" Sortable="true" Style="width:100px;" />
                 <TemplateColumn Context="permContext">
                     @{
                         var perms = permContext.Permissions.AsQueryable();
                     }
                     <FluentDataGrid Items="@perms">
-                        <PropertyColumn Property="@(p => p.Name)" Title="Permission" Sortable="true" />
+                        <PropertyColumn Property="@(p => p.Name)" Title="Permission" Sortable="true" Style="width:180px;" />
                         <TemplateColumn Title="Roles">
                             @{
                                 string[] roles = permContext.Roles.Select(a => a.Name).ToArray();
@@ -32,11 +38,8 @@ Welcome to Policy Server..
                             }
                             <FluentLabel>@roleNames</FluentLabel>
                             </TemplateColumn>
-
-
                         </FluentDataGrid>
                     </TemplateColumn>
-
                 </FluentDataGrid>
             </TemplateColumn>
         </ChildContent>
@@ -50,6 +53,4 @@ Welcome to Policy Server..
         var allPolicies = await UserRepo.GetPolicies();
         policyList = allPolicies.AsQueryable();
     }
-
-   
 }
