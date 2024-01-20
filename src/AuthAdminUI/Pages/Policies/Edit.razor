@@ -14,6 +14,8 @@
     </FluentBreadcrumbItem>
 </FluentBreadcrumb>
 
+<FluentButton Appearance="Appearance.Accent" OnClick="@(()=>SaveAsync(null))" Title="Save" IconStart="@(new Icons.Regular.Size24.Save())" />
+
 <FluentStack Orientation="Orientation.Horizontal">
 
     <FluentStack Orientation="Orientation.Vertical" Style="width:50%;" HorizontalAlignment="HorizontalAlignment.Left">
@@ -38,10 +40,10 @@
             <FluentDataGrid Items="permRoleList" Style="width:500px;">
                 <EmptyContent>No Roles</EmptyContent>
                 <ChildContent>
-                    <PropertyColumn Align="Align.Start" Property="@(a => a.Name)" Style="width:350px;" Sortable="true" />
-                    <TemplateColumn Title="Checked?" Style="width:100px;">
+                    <TemplateColumn Style="width:50px;">
                         <FluentCheckbox @bind-Value="context.IsSelected"></FluentCheckbox>
                     </TemplateColumn>
+                    <PropertyColumn Align="Align.Start" Property="@(a => a.Name)" Style="width:350px;" Sortable="true" />
                     <TemplateColumn Title="Actions" Style="width:200px;" Context="roleContext">
                         <FluentButton IconStart="@(new Icons.Regular.Size24.Edit())" @onclick="@((p) => EditRole(roleContext.Name))"></FluentButton>
                         <FluentButton IconStart="@(new Icons.Regular.Size24.Delete())" @onclick="@((p) => DeleteRole(roleContext.Name))"></FluentButton>
@@ -56,10 +58,10 @@
                 <FluentDataGrid Items="roleUsers" Style="width:500px;">
                     <EmptyContent>No Users</EmptyContent>
                     <ChildContent>
-                        <PropertyColumn Align="Align.Start" Property="@(a => a.UserId)" Style="width:350px;" Sortable="true" />
-                        <TemplateColumn Title="Checked?" Style="width:100px;">
+                        <TemplateColumn Style="width:50px;">
                             <FluentCheckbox @bind-Value="context.IsSelected"></FluentCheckbox>
                         </TemplateColumn>
+                        <PropertyColumn Align="Align.Start" Property="@(a => a.UserId)" Style="width:350px;" Sortable="true" />
                         <TemplateColumn Title="Actions" Style="width:200px;" Context="userContext">
                             <FluentButton IconStart="@(new Icons.Regular.Size24.Edit())"></FluentButton>
                             <FluentButton IconStart="@(new Icons.Regular.Size24.Delete())"></FluentButton>
@@ -77,24 +79,23 @@
     IQueryable<PolicyDtos.Permission> permList = null;
     private bool showRolePanel = false;
     private bool showUserPanel = false;
-
+    List<PolicyDtos.Role> allRoles = null;
     protected override async Task OnInitializedAsync()
     {
         var allPolicies = await UserRepo.GetPolicies();
         dataPolicy = allPolicies.FirstOrDefault().Policies.FirstOrDefault();
         permList = dataPolicy.Permissions.AsQueryable();
+        allRoles = dataPolicy.Roles;
     }
 
     public async Task EditPermission(string permName)
     {
         showRolePanel = true;
         showUserPanel = false;
-
-        var allRoles = dataPolicy.Roles;
         var permRoles = dataPolicy.Permissions.FirstOrDefault(a => a.Name == permName).Roles;
         foreach (var role in allRoles)
         {
-            role.IsSelected = permRoles.Any(x => x == role.Name);
+            role.IsSelected = permRoles.Any(x => x.Name == role.Name);
         }
         permRoleList = allRoles.AsQueryable();
         //roleUsers = dataPolicy.Roles.FirstOrDefault(a => a.Name == roleName).Subjects.AsQueryable() ?? Enumerable.Empty<string>().AsQueryable();
@@ -104,11 +105,34 @@
     {
         showUserPanel = true;
         var allUsers = await UserRepo.GetAllUsers();
+        var selRole = permRoleList.FirstOrDefault(a => a.Name == roleName);
         foreach (var u in allUsers)
         {
-            u.IsSelected = permRoleList.FirstOrDefault(a => a.Name == roleName).Subjects.Any(x => x == u.UserId);
+            u.IsSelected = selRole.Subjects.Any(x => x == u.UserId);
         }
         roleUsers = allUsers.AsQueryable();
+    }
+
+    private async Task SaveAsync(PolicyDtos.Policy optionItem)
+    {
+        var res = dataPolicy;
+
+        var selRole = permRoleList.FirstOrDefault(a => a.Name == "Manager");
+        // foreach (var u in roleUsers)
+        // {
+        //     if (u.IsSelected)
+        //     {
+        //         if (!selRole.Subjects.Contains(u.UserId))
+        //             selRole.Subjects.Add(u.UserId);
+        //     }
+        //     else if (!u.IsSelected)
+        //     {
+        //         if (selRole.Subjects.Contains(u.UserId))
+        //             selRole.Subjects.Remove(u.UserId);
+        //     }
+        // }
+        //Need to add saving details code
+        await Task.Delay(20000);
     }
 
     public async Task DeleteRole(string roleName)

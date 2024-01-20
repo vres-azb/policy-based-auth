@@ -1,0 +1,59 @@
+﻿@page "/Roles/Index"
+@using PolicyBased.Infra.Models
+@using PolicyBased.Infra.Persistence.Repositories
+@using PolicyDtos = PolicyBased.Infra.Dtos;
+
+@inject IUserRepo UserRepo;
+<PageTitle>Policies</PageTitle>
+
+<FluentBreadcrumb>
+    <FluentBreadcrumbItem Href="#">
+        <h5>
+            Policies
+        </h5>
+    </FluentBreadcrumbItem>
+</FluentBreadcrumb>
+
+
+<FluentStack Orientation="Orientation.Horizontal">
+
+    <FluentStack Orientation="Orientation.Vertical" Style="width:50%;" HorizontalAlignment="HorizontalAlignment.Left">
+        <FluentDataGrid Items="@policyList" ItemKey="(a=>a.Id)" Style="width:850px;" ResizableColumns="false">
+            <EmptyContent>No policies</EmptyContent>
+            <ChildContent>
+                <TemplateColumn Title="Actions">
+                    <FluentAnchor Href="/Policies/Edit" IconStart="@(new Icons.Regular.Size24.Edit())">
+                    </FluentAnchor>
+                </TemplateColumn>
+                <PropertyColumn Align="Align.Start" Property="@(a => a.Name)" Style="width:80px;" Sortable="true" />
+                <TemplateColumn Style="width:500px;" Title="Policy" Context="policyContext" Align="Align.Start">
+                    <FluentDataGrid Items="@policyContext.Policies.AsQueryable()" ResizableColumns="false" GenerateHeader="GenerateHeaderOption.None">
+                        <PropertyColumn Property="@(p => p.Name)" Sortable="true" Style="width:100px;" />
+                        <TemplateColumn Context="permContext">
+                            @{
+                                var permRoles = permContext.Roles.AsQueryable();
+                            }
+                            <FluentDataGrid Items="@permRoles" GenerateHeader="GenerateHeaderOption.None">
+                                <PropertyColumn Property="@(p => p.Name)" Title="Role" Sortable="true" Style="width:120px;" />
+                                <TemplateColumn Title="Actions" Style="width:50px;">
+                                    <FluentButton IconStart="@(new Icons.Regular.Size24.Edit())"></FluentButton>
+                                </TemplateColumn>
+                                </FluentDataGrid>
+                            </TemplateColumn>
+                        </FluentDataGrid>
+                    </TemplateColumn>
+                </ChildContent>
+            </FluentDataGrid>
+    </FluentStack>
+
+
+    </FluentStack>
+    @code {
+    IQueryable<PolicyDtos.Application>? policyList = null;
+    int currentAppId;
+    protected override async Task OnInitializedAsync()
+    {
+        var allPolicies = await UserRepo.GetPolicies();
+        policyList = allPolicies.AsQueryable();
+    }
+}

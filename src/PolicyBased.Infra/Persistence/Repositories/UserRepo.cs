@@ -57,7 +57,7 @@ namespace PolicyBased.Infra.Persistence.Repositories
                         PolicyDtos.Permission prm = new()
                         {
                             Name = perm.Name,
-                            Roles = perm.AppPolicies.Where(a => a.PermissionId == perm.Id).Select(a => a.Role.RoleName).ToList()
+                            Roles = perm.AppPolicies.Where(a => a.PermissionId == perm.Id).Select(a => new Role() { Name = a.Role.RoleName }).ToList()
                         };
 
                         p.Permissions.Add(prm);
