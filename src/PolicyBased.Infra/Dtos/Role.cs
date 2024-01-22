@@ -1,57 +1,16 @@
-﻿using System.Security.Claims;
-
-namespace PolicyBased.Infra.Dtos
+﻿namespace PolicyBased.Infra.Dtos
 {
-    /// <summary>
-    /// Models an application role
-    /// </summary>
     public class Role
     {
-        /// <summary>
-        /// Gets the name.
-        /// </summary>
-        /// <value>
-        /// The name.
-        /// </value>
-        public string Name { get; set; }
+        public string Name { get; set; } = default!;
 
         public bool IsSelected { get; set; } = default!;
 
-        public List<string> Permissions { get; set; } = default!;     //KK
-        /// <summary>
-        /// Gets the subjects.
-        /// </summary>
-        /// <value>
-        /// The subjects.
-        /// </value>
-        public List<string> Subjects { get; set; } = new List<string>();
+        public List<Permission> Permissions { get; set; } = new();
 
-        /// <summary>
-        /// Gets the identity roles.
-        /// </summary>
-        /// <value>
-        /// The identity roles.
-        /// </value>
-        public List<string> IdentityRoles { get; set; } = new List<string>();
+        public List<Subject> Subjects { get; set; } = new();
 
-        // TODO: this MUST be internal scope, making this public for demo
-        public bool Evaluate(ClaimsPrincipal user)
-        {
-            if (user == null) throw new ArgumentNullException(nameof(user));
+        public List<string> IdentityRoles { get; set; } = new();
 
-            var sub = user.FindFirst("sub")?.Value;
-            if (!String.IsNullOrWhiteSpace(sub))
-            {
-                if (Subjects.Contains(sub)) return true;
-            }
-
-            var roles = user.FindAll("role").Select(x => x.Value);
-            if (roles.Any())
-            {
-                if (IdentityRoles.Any(x => roles.Contains(x))) return true;
-            }
-
-            return false;
-        }
     }
 }

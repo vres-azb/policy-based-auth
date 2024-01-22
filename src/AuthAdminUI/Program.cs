@@ -32,8 +32,7 @@ namespace AuthAdminUI
             builder.Services.AddSingleton<WeatherForecastService>();
             builder.Services.AddFluentUIComponents();
             var services = builder.Services;
-            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-            services.AddSingleton<IDataContextFactory, DataContextFactory>();
+            services.AddScoped<IDataContextFactory, DataContextFactory>();
             services.AddScoped(provider =>
             {
                 var factory = provider.GetRequiredService<IDataContextFactory>();

@@ -1,138 +1,119 @@
-﻿@page "/policies/edit"
+﻿@page "/policies/edit/{PolicyId}"
 @using PolicyBased.Infra.Models
 @using PolicyBased.Infra.Persistence.Repositories
 @using PolicyDtos = PolicyBased.Infra.Dtos;
 
 @inject IUserRepo UserRepo;
 
-<FluentBreadcrumb>
+<FluentBreadcrumb Style="padding-bottom:5px;">
+    @{
+        string policId = PolicyId;
+        string policyEditUrl = $"/Policies/Edit/{policId}";
+    }
     <FluentBreadcrumbItem Href="/">
         Policies
     </FluentBreadcrumbItem>
-    <FluentBreadcrumbItem Href="policies/edit">
-        Edit
+    <FluentBreadcrumbItem Href="@policyEditUrl">
+        @dataPolicy.Name
+    </FluentBreadcrumbItem>
+    <FluentBreadcrumbItem Style="font-weight:bolder;font-size:medium">
+        @curRoleName
     </FluentBreadcrumbItem>
 </FluentBreadcrumb>
 
-<FluentButton Appearance="Appearance.Accent" OnClick="@(()=>SaveAsync(null))" Title="Save" IconStart="@(new Icons.Regular.Size24.Save())" />
-
+<FluentStack Orientation="Orientation.Vertical" HorizontalAlignment="HorizontalAlignment.Left">
+    <FluentDivider Role="DividerRole.Separator" Orientation="Orientation.Horizontal" Style="width: 100%;"></FluentDivider>
+    <FluentButton Appearance="Appearance.Accent" OnClick="@(()=> SaveAsync())" Title="Save" Value="Save Policy" IconStart="@(new Icons.Regular.Size24.Save())">
+        Save Policy
+    </FluentButton>
+</FluentStack>
 <FluentStack Orientation="Orientation.Horizontal">
 
-    <FluentStack Orientation="Orientation.Vertical" Style="width:50%;" HorizontalAlignment="HorizontalAlignment.Left">
-        <FluentLabel Typo="Typography.PaneHeader"> Permissions </FluentLabel>
-        <FluentDataGrid Items="permList" Style="width:400px;">
-            <EmptyContent>No policies</EmptyContent>
-            <ChildContent>
-                <PropertyColumn Align="Align.Start" Property="@(a => a.Name)" Style="width:250px;" Sortable="true" />
-
-                <TemplateColumn Title="Actions" Style="width:200px;" Context="permContext">
-                    <FluentButton IconStart="@(new Icons.Regular.Size24.Edit())" @onclick="@((p) => EditPermission(permContext.Name))"></FluentButton>
-                    @* <FluentButton IconStart="@(new Icons.Regular.Size24.Delete())" @onclick="@((p) => DeletePolicy(roleContext.Name))"></FluentButton> *@
-                </TemplateColumn>
-            </ChildContent>
-        </FluentDataGrid>
-    </FluentStack>
-
-    @if (showRolePanel)
-    {
-        <FluentStack Orientation="Orientation.Vertical" HorizontalAlignment="HorizontalAlignment.Left">
-            <FluentLabel Typo="Typography.PaneHeader"> Roles </FluentLabel>
-            <FluentDataGrid Items="permRoleList" Style="width:500px;">
+    <FluentStack Orientation="Orientation.Vertical" Style="width:60%;" HorizontalAlignment="HorizontalAlignment.Left">
+        <FluentLabel Typo="Typography.PaneHeader"> Roles </FluentLabel>
+        @if (isLoaded)
+        {
+            <FluentDataGrid Items="allRoles.AsQueryable()" Style="width:500px;">
                 <EmptyContent>No Roles</EmptyContent>
                 <ChildContent>
                     <TemplateColumn Style="width:50px;">
                         <FluentCheckbox @bind-Value="context.IsSelected"></FluentCheckbox>
                     </TemplateColumn>
                     <PropertyColumn Align="Align.Start" Property="@(a => a.Name)" Style="width:350px;" Sortable="true" />
-                    <TemplateColumn Title="Actions" Style="width:200px;" Context="roleContext">
-                        <FluentButton IconStart="@(new Icons.Regular.Size24.Edit())" @onclick="@((p) => EditRole(roleContext.Name))"></FluentButton>
-                        <FluentButton IconStart="@(new Icons.Regular.Size24.Delete())" @onclick="@((p) => DeleteRole(roleContext.Name))"></FluentButton>
+                    <TemplateColumn Title="Actions" Style="width:200px;">
+                        <FluentButton IconStart="@(new Icons.Regular.Size24.Edit())" @onclick="@((p) => EditRole(context.Name))"></FluentButton>
+                        @* <FluentButton IconStart="@(new Icons.Regular.Size24.Delete())" @onclick="@((p) => DeleteRole(context.Name))"></FluentButton> *@
                     </TemplateColumn>
 
                 </ChildContent>
             </FluentDataGrid>
+        }
+    </FluentStack>
 
-            @if (showUserPanel)
-            {
-                <FluentLabel Typo="Typography.PaneHeader"> Users </FluentLabel>
-                <FluentDataGrid Items="roleUsers" Style="width:500px;">
-                    <EmptyContent>No Users</EmptyContent>
-                    <ChildContent>
-                        <TemplateColumn Style="width:50px;">
-                            <FluentCheckbox @bind-Value="context.IsSelected"></FluentCheckbox>
-                        </TemplateColumn>
-                        <PropertyColumn Align="Align.Start" Property="@(a => a.UserId)" Style="width:350px;" Sortable="true" />
-                        <TemplateColumn Title="Actions" Style="width:200px;" Context="userContext">
-                            <FluentButton IconStart="@(new Icons.Regular.Size24.Edit())"></FluentButton>
-                            <FluentButton IconStart="@(new Icons.Regular.Size24.Delete())"></FluentButton>
-                        </TemplateColumn>
-                    </ChildContent>
-                </FluentDataGrid>
-            }
+    @if (showDetailPanel)
+    {
+        <FluentStack Orientation="Orientation.Vertical">
+            <FluentLabel Typo="Typography.PaneHeader"> Permissions </FluentLabel>
+            <FluentDataGrid Items="permList" Style="width:400px;">
+                <EmptyContent>No policies</EmptyContent>
+                <ChildContent>
+                    <TemplateColumn Style="width:50px;">
+                        <FluentCheckbox @bind-Value="context.IsSelected"></FluentCheckbox>
+                    </TemplateColumn>
+                    <PropertyColumn Align="Align.Start" Property="@(a => a.Name)" Style="width:250px;" Sortable="true" />
+                </ChildContent>
+            </FluentDataGrid>
+
+
+            <FluentLabel Typo="Typography.PaneHeader"> Users </FluentLabel>
+            <FluentDataGrid Items="roleUsers" Style="width:500px;">
+                <EmptyContent>No Users</EmptyContent>
+                <ChildContent>
+                    <TemplateColumn Style="width:50px;">
+                        <FluentCheckbox @bind-Value="context.IsSelected"></FluentCheckbox>
+                    </TemplateColumn>
+                    <PropertyColumn Align="Align.Start" Property="@(a => a.UserId)" Style="width:250px;" Sortable="true" />
+                    <PropertyColumn Align="Align.Start" Property="@(a => a.UserName)" Style="width:250px;" Sortable="true" />
+                </ChildContent>
+            </FluentDataGrid>
         </FluentStack>
     }
 </FluentStack>
 @code {
     PolicyDtos.Policy dataPolicy = new PolicyDtos.Policy();
-    IQueryable<PolicyDtos.Subject> roleUsers = null;
-    IQueryable<PolicyDtos.Role> permRoleList = null;
+    bool isLoaded = false;
+    IQueryable<PolicyDtos.Subject>? roleUsers = null;
     IQueryable<PolicyDtos.Permission> permList = null;
-    private bool showRolePanel = false;
-    private bool showUserPanel = false;
+    private bool showDetailPanel = false;
     List<PolicyDtos.Role> allRoles = null;
+    string? curRoleName;
+
+    [Parameter]
+    public string PolicyId { get; set; }
+
     protected override async Task OnInitializedAsync()
     {
-        var allPolicies = await UserRepo.GetPolicies();
-        dataPolicy = allPolicies.FirstOrDefault().Policies.FirstOrDefault();
-        permList = dataPolicy.Permissions.AsQueryable();
+        dataPolicy = await UserRepo.GetPolicy(int.Parse(PolicyId));
         allRoles = dataPolicy.Roles;
-    }
-
-    public async Task EditPermission(string permName)
-    {
-        showRolePanel = true;
-        showUserPanel = false;
-        var permRoles = dataPolicy.Permissions.FirstOrDefault(a => a.Name == permName).Roles;
-        foreach (var role in allRoles)
-        {
-            role.IsSelected = permRoles.Any(x => x.Name == role.Name);
-        }
-        permRoleList = allRoles.AsQueryable();
-        //roleUsers = dataPolicy.Roles.FirstOrDefault(a => a.Name == roleName).Subjects.AsQueryable() ?? Enumerable.Empty<string>().AsQueryable();
+        isLoaded = true;
     }
 
     public async Task EditRole(string roleName)
     {
-        showUserPanel = true;
+        showDetailPanel = true;
         var allUsers = await UserRepo.GetAllUsers();
-        var selRole = permRoleList.FirstOrDefault(a => a.Name == roleName);
-        foreach (var u in allUsers)
+        var selRole = allRoles.FirstOrDefault(a => a.Name == roleName);
+        if (selRole != null)
         {
-            u.IsSelected = selRole.Subjects.Any(x => x == u.UserId);
+            curRoleName = selRole.Name;
+            roleUsers = selRole.Subjects.AsQueryable();
+            permList = selRole.Permissions.AsQueryable();
         }
-        roleUsers = allUsers.AsQueryable();
     }
 
-    private async Task SaveAsync(PolicyDtos.Policy optionItem)
+    private async Task SaveAsync()
     {
-        var res = dataPolicy;
-
-        var selRole = permRoleList.FirstOrDefault(a => a.Name == "Manager");
-        // foreach (var u in roleUsers)
-        // {
-        //     if (u.IsSelected)
-        //     {
-        //         if (!selRole.Subjects.Contains(u.UserId))
-        //             selRole.Subjects.Add(u.UserId);
-        //     }
-        //     else if (!u.IsSelected)
-        //     {
-        //         if (selRole.Subjects.Contains(u.UserId))
-        //             selRole.Subjects.Remove(u.UserId);
-        //     }
-        // }
-        //Need to add saving details code
-        await Task.Delay(20000);
+        await UserRepo.SavePolicy(dataPolicy);
     }
 
     public async Task DeleteRole(string roleName)

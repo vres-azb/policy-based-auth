@@ -2,8 +2,8 @@
 @using PolicyBased.Infra.Models
 @using PolicyBased.Infra.Persistence.Repositories
 @using PolicyDtos = PolicyBased.Infra.Dtos;
-
 @inject IUserRepo UserRepo;
+
 <PageTitle>Policies</PageTitle>
 
 <FluentBreadcrumb>
@@ -14,29 +14,34 @@
     </FluentBreadcrumbItem>
 </FluentBreadcrumb>
 
-<FluentDataGrid Items="@policyList" ItemKey="(a=>a.Id)" Style="width:870px;" ResizableColumns="false">
+<FluentDataGrid Items="@policyList" ItemKey="(a=>a.Id)" ResizableColumns="false" GridTemplateColumns="0.1fr 1fr">
     <EmptyContent>No policies</EmptyContent>
     <ChildContent>
-        <TemplateColumn Title="Actions">
-            <FluentAnchor Href="/Policies/Edit" IconStart="@(new Icons.Regular.Size24.Edit())">
-            </FluentAnchor>
-        </TemplateColumn>
-        <PropertyColumn Align="Align.Start" Property="@(a => a.Name)" Style="width:80px;" Sortable="true" />
-        <TemplateColumn Style="width:700px;" Title="Policy" Context="policyContext" Align="Align.Start">
-            <FluentDataGrid Items="@policyContext.Policies.AsQueryable()" ResizableColumns="false" GenerateHeader="GenerateHeaderOption.None">
-                <PropertyColumn Property="@(p => p.Name)" Sortable="true" Style="width:100px;" />
+
+        <PropertyColumn Align="Align.Start" Property="@(a => a.Name)" Sortable="true" />
+        <TemplateColumn Title="Policy" Context="policyContext" Align="Align.Start">
+            <FluentDataGrid Items="@policyContext.Policies.AsQueryable()" GenerateHeader="GenerateHeaderOption.None" GridTemplateColumns="0.2fr 0.1fr  1fr">
+                <TemplateColumn Title="Actions" Context="pContext">
+                    @{
+                        int policId = pContext.Id;
+                        string policyEditUrl = $"/Policies/Edit/{policId}";
+                    }
+                    <FluentAnchor Href="@policyEditUrl" IconStart="@(new Icons.Regular.Size24.Edit())">
+                    </FluentAnchor>
+                </TemplateColumn>
+                <PropertyColumn Property="@(p => p.Name)" Sortable="true" />
                 <TemplateColumn Context="permContext">
                     @{
-                        var perms = permContext.Permissions.AsQueryable();
+                        var roles = permContext.Roles.AsQueryable();
                     }
-                    <FluentDataGrid Items="@perms">
-                        <PropertyColumn Property="@(p => p.Name)" Title="Permission" Sortable="true" Style="width:180px;" />
-                        <TemplateColumn Title="Roles">
+                    <FluentDataGrid Items="@roles" GridTemplateColumns="0.2fr 1fr">
+                        <PropertyColumn Property="@(p => p.Name)" Title="Role" Sortable="true" />
+                        <TemplateColumn Title="Permissions" Context="roleContext">
                             @{
-                                string[] roles = permContext.Roles.Select(a => a.Name).ToArray();
-                                string roleNames = string.Join(", ", roles);
+                                string[] perms = roleContext.Permissions.Select(a => a.Name).ToArray();
+                                string permsNames = string.Join(", ", perms);
                             }
-                            <FluentLabel>@roleNames</FluentLabel>
+                            <FluentLabel>@permsNames</FluentLabel>
                             </TemplateColumn>
                         </FluentDataGrid>
                     </TemplateColumn>
