@@ -14,48 +14,104 @@
     </FluentBreadcrumbItem>
 </FluentBreadcrumb>
 
-<FluentDataGrid Items="@policyList" ItemKey="(a=>a.Id)" ResizableColumns="false" GridTemplateColumns="0.1fr 1fr">
-    <EmptyContent>No policies</EmptyContent>
-    <ChildContent>
+<FluentStack Orientation="Orientation.Horizontal" Style="width:100%">
 
-        <PropertyColumn Align="Align.Start" Property="@(a => a.Name)" Sortable="true" />
-        <TemplateColumn Title="Policy" Context="policyContext" Align="Align.Start">
-            <FluentDataGrid Items="@policyContext.Policies.AsQueryable()" GenerateHeader="GenerateHeaderOption.None" GridTemplateColumns="0.2fr 0.1fr  1fr">
-                <TemplateColumn Title="Actions" Context="pContext">
-                    @{
-                        int policId = pContext.Id;
-                        string policyEditUrl = $"/Policies/Edit/{policId}";
-                    }
-                    <FluentAnchor Href="@policyEditUrl" IconStart="@(new Icons.Regular.Size24.Edit())">
-                    </FluentAnchor>
-                </TemplateColumn>
-                <PropertyColumn Property="@(p => p.Name)" Sortable="true" />
-                <TemplateColumn Context="permContext">
-                    @{
-                        var roles = permContext.Roles.AsQueryable();
-                    }
-                    <FluentDataGrid Items="@roles" GridTemplateColumns="0.2fr 1fr">
-                        <PropertyColumn Property="@(p => p.Name)" Title="Role" Sortable="true" />
-                        <TemplateColumn Title="Permissions" Context="roleContext">
+    <FluentStack Orientation="Orientation.Vertical" HorizontalAlignment="HorizontalAlignment.End" Style="width:70%">
+
+        <FluentButton IconStart="@(new Icons.Regular.Size24.New())" OnClick="(()=>ToggleNewPolicy(isCancel:false))">Add New</FluentButton>
+
+        <FluentDataGrid Items="@policyList" ItemKey="(a=>a.Id)" ResizableColumns="false" style="width:100%" GridTemplateColumns="0.2fr 1fr">
+            <EmptyContent>No policies</EmptyContent>
+            <ChildContent>
+                <PropertyColumn Align="Align.Start" Property="@(a => a.Name)" Sortable="true" />
+                <TemplateColumn Title="Policy" Context="policyContext" Align="Align.Start">
+                    <FluentDataGrid Items="@policyContext.Policies.AsQueryable()" GenerateHeader="GenerateHeaderOption.None" GridTemplateColumns="0.2fr 0.2fr  1fr">
+                        <TemplateColumn Title="Actions" Context="pContext">
                             @{
-                                string[] perms = roleContext.Permissions.Select(a => a.Name).ToArray();
-                                string permsNames = string.Join(", ", perms);
+                                int policId = pContext.Id;
+                                string policyEditUrl = $"/Policies/Edit/{policId}";
                             }
-                            <FluentLabel>@permsNames</FluentLabel>
+                            <FluentAnchor Href="@policyEditUrl" Appearance="Appearance.Hypertext" IconStart="@(new Icons.Regular.Size24.Edit())">
+                            </FluentAnchor>
+                            <FluentButton OnClick="(()=>DeletePolicy(pContext.Id))" IconStart="@(new Icons.Regular.Size24.Delete())"></FluentButton>
+                        </TemplateColumn>
+                        <PropertyColumn Property="@(p => p.Name)" Sortable="true" />
+                        <TemplateColumn Context="permContext">
+                            @{
+                                var roles = permContext.Roles.AsQueryable();
+                            }
+                            <FluentDataGrid Items="@roles" GridTemplateColumns="0.5fr 1fr">
+                                <PropertyColumn Property="@(p => p.Name)" Title="Role" Sortable="true" />
+                                <TemplateColumn Title="Permissions" Context="roleContext">
+                                    @{
+                                        string[] perms = roleContext.Permissions.Select(a => a.Name).ToArray();
+                                        string permsNames = string.Join(", ", perms);
+                                    }
+                                    <FluentLabel>@permsNames</FluentLabel>
+                                    </TemplateColumn>
+                                </FluentDataGrid>
                             </TemplateColumn>
                         </FluentDataGrid>
                     </TemplateColumn>
-                </FluentDataGrid>
-            </TemplateColumn>
-        </ChildContent>
-    </FluentDataGrid>
+                </ChildContent>
+            </FluentDataGrid>
+        </FluentStack>
 
-    @code {
+        <FluentDivider Role="DividerRole.Separator" Orientation="Orientation.Vertical" Style="height: 500px;"></FluentDivider>
+
+        @if (showAddNew)
+    {
+        <FluentStack Orientation="Orientation.Vertical" Style="width:20%">
+            <FluentStack Orientation="Orientation.Horizontal" >
+                <FluentTextField Placeholder="Policy Name" @bind-Value="newPolicyName"></FluentTextField>
+                <FluentButton OnClick="(()=>AddNewPolicy())">Save</FluentButton>
+                <FluentButton OnClick="(()=>ToggleNewPolicy(isCancel:true))">Cancel</FluentButton>
+            </FluentStack>
+            <FluentStack Orientation="Orientation.Horizontal">
+
+                @if (newPolicyEditUrl != string.Empty)
+                {
+                    <FluentAnchor Appearance="Appearance.Hypertext" Href="@newPolicyEditUrl">Configure the policy</FluentAnchor>
+                }
+            </FluentStack>
+        </FluentStack>
+    }
+</FluentStack>
+
+@code {
     IQueryable<PolicyDtos.Application>? policyList = null;
     int currentAppId;
+    bool showAddNew = false;
+    string newPolicyName = string.Empty;
+    string newPolicyEditUrl = string.Empty;
+
     protected override async Task OnInitializedAsync()
     {
         var allPolicies = await UserRepo.GetPolicies();
         policyList = allPolicies.AsQueryable();
+    }
+
+    void ToggleNewPolicy(bool isCancel)
+    {
+        if (!isCancel)
+        {
+            showAddNew = true;
+        }
+        else
+        {
+            showAddNew = false;
+        }
+    }
+
+    async Task AddNewPolicy()
+    {
+        int newPolicyId = await UserRepo.AddNewPolicy(newPolicyName);
+        newPolicyEditUrl = $"/Policies/Edit/{newPolicyId}";
+    }
+
+    async Task DeletePolicy(int policyId)
+    {
+        await UserRepo.DeletePolicy(policyId);
+        StateHasChanged();
     }
 }

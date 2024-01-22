@@ -64,6 +64,12 @@ namespace PolicyBased.Infra.Persistence.Context
                     .IsRequired()
                     .HasMaxLength(50)
                     .IsUnicode(false);
+
+                entity.HasOne(d => d.Application)
+                    .WithMany(p => p.Permissions)
+                    .HasForeignKey(d => d.ApplicationId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_Permissions_Applications");
             });
 
             modelBuilder.Entity<Policy>(entity =>
@@ -86,6 +92,12 @@ namespace PolicyBased.Infra.Persistence.Context
                     .IsRequired()
                     .HasMaxLength(50)
                     .IsUnicode(false);
+
+                entity.HasOne(d => d.Application)
+                    .WithMany(p => p.Roles)
+                    .HasForeignKey(d => d.ApplicationId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_Roles_Applications");
             });
 
             modelBuilder.Entity<User>(entity =>

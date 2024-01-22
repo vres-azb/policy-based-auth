@@ -8,5 +8,7 @@ namespace PolicyBased.Infra.Persistence.Repositories
         Task<List<PolicyDtos.Subject>> GetAllUsers();
         Task<PolicyDtos.Policy> GetPolicy(int policyId);
         Task SavePolicy(PolicyDtos.Policy policy);
+        Task<int> AddNewPolicy(string policyName);
+        Task<bool> DeletePolicy(int policyId);
     }
 }

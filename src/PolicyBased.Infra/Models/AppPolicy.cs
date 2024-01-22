@@ -11,7 +11,7 @@ namespace PolicyBased.Infra.Models
         public int PolicyId { get; set; }
         public int RoleId { get; set; }
         public int PermissionId { get; set; }
-        public bool? IsDeleted { get; set; }
+        public bool IsDeleted { get; set; }
 
         public virtual Permission Permission { get; set; }
         public virtual Policy Policy { get; set; }

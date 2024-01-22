@@ -9,12 +9,17 @@ namespace PolicyBased.Infra.Models
     {
         public Application()
         {
+            Permissions = new HashSet<Permission>();
             Policies = new HashSet<Policy>();
+            Roles = new HashSet<Role>();
         }
 
         public int Id { get; set; }
         public string Name { get; set; }
+        public bool IsDeleted { get; set; }
 
+        public virtual ICollection<Permission> Permissions { get; set; }
         public virtual ICollection<Policy> Policies { get; set; }
+        public virtual ICollection<Role> Roles { get; set; }
     }
 }

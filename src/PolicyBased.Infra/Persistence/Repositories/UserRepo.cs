@@ -2,6 +2,7 @@
 using PolicyBased.Infra.Dtos;
 using PolicyBased.Infra.Models;
 using PolicyBased.Infra.Persistence.Context;
+using Policy = PolicyBased.Infra.Models.Policy;
 using PolicyDtos = PolicyBased.Infra.Dtos;
 namespace PolicyBased.Infra.Persistence.Repositories;
 
@@ -23,8 +24,9 @@ public class UserRepo : IUserRepo
     public async Task<List<PolicyDtos.Application>> GetPolicies()
     {
         List<PolicyDtos.Application> apps = new();
-        var dbPolicies = await _dbContext.Policies.Include(a => a.AppPolicies).Include(a => a.Application).ToListAsync();
-        var appPolicies = await _dbContext.AppPolicies.Include(a => a.Policy).Include(a => a.Permission).Include(a => a.Role).ToListAsync().ConfigureAwait(false);
+        var dbPolicies = await _dbContext.Policies.Include(a => a.AppPolicies).Include(a => a.Application).Where(a => !a.IsDeleted).ToListAsync();
+        var appPolicies = await _dbContext.AppPolicies.Include(a => a.Policy).Include(a => a.Permission)
+            .Include(a => a.Role).Where(a => !a.IsDeleted == true).ToListAsync().ConfigureAwait(false);
 
         var roleUsers = _dbContext.UserRoles.Include(a => a.User).ToList();
         var allPerms = await _dbContext.Permissions.ToListAsync();
@@ -39,6 +41,7 @@ public class UserRepo : IUserRepo
             List<PolicyDtos.Policy> policyList = new();
             foreach (var dbPolicy in dbPolicies)
             {
+                var appPolicy = appPolicies.Where(a => a.PolicyId == dbPolicy.Id).ToList();
                 PolicyDtos.Policy p = new()
                 {
                     Name = dbPolicy.Name,
@@ -48,10 +51,9 @@ public class UserRepo : IUserRepo
                 var roles = await _dbContext.Roles.Select(a => new PolicyDtos.Role() { Name = a.RoleName, IsSelected = true }).ToListAsync();
                 foreach (var r in roles)
                 {
-                               
                     foreach (var perm in allPerms)
                     {
-                        if (appPolicies.Any(a => a.Role.RoleName == r.Name && a.Permission.Name == perm.Name))
+                        if (appPolicy.Any(a => a.Role.RoleName == r.Name && a.Permission.Name == perm.Name))
                         {
                             r.Permissions.Add(new()
                             {
@@ -65,24 +67,21 @@ public class UserRepo : IUserRepo
 
                 policyList.Add(p);
             }
-
-
             app.Policies = policyList.ToArray();
             apps.Add(app);
         }
         return apps;
     }
 
-    public async Task<PolicyDtos.Policy> GetPolicy(int policyId = 1)
+    public async Task<PolicyDtos.Policy> GetPolicy(int policyId)
     {
         var dbPolicy = await _dbContext.Policies.Include(a => a.AppPolicies).Include(a => a.Application).FirstOrDefaultAsync(a => a.Id == policyId);
-        var appPolicies = await _dbContext.AppPolicies.Include(a => a.Policy).Include(a => a.Permission).Include(a => a.Role).ToListAsync().ConfigureAwait(false);
+        var appPolicies = await _dbContext.AppPolicies.Include(a => a.Policy).Include(a => a.Permission)
+            .Include(a => a.Role).Where(a => !a.IsDeleted == true).ToListAsync().ConfigureAwait(false);
 
         appPolicies = appPolicies.Where(a => a.PolicyId == policyId && !a.IsDeleted == true).ToList();
         var roleUsers = _dbContext.UserRoles.Include(a => a.User).ToList();
         var allPerms = await _dbContext.Permissions.ToListAsync();
-
-
         PolicyDtos.Policy p = new()
         {
             Name = dbPolicy.Name,
@@ -90,14 +89,9 @@ public class UserRepo : IUserRepo
         };
 
         var allUsers = await _dbContext.Users.Include(u => u.UserRoles).ToListAsync();
-        //var roleNames = await _dbContext.Roles.Select(a => a.RoleName).ToListAsync();
-
         var roles = await _dbContext.Roles.Select(a => new PolicyDtos.Role() { Name = a.RoleName, IsSelected = true }).ToListAsync();
         foreach (var r in roles)
         {
-            //r.Subjects = roleUsers.Where(a => a.Role.RoleName == r.Name).Select(a =>
-            //    new Subject() { UserId = a.User.UserId.ToString(), IsSelected = true }).ToList();
-
             foreach (var u in allUsers)
             {
                 if (u.UserRoles.Any(a => a.Role.RoleName == r.Name))
@@ -183,5 +177,28 @@ public class UserRepo : IUserRepo
         }
         await _dbContext.AppPolicies.AddRangeAsync(newPolcies);
         await _dbContext.SaveChangesAsync();
+    }
+
+    public async Task<int> AddNewPolicy(string policyName)
+    {
+        var policy = new Policy()
+        {
+            Name = policyName,
+            ApplicationId = 1
+        };
+        _dbContext.Add(policy);
+        await _dbContext.SaveChangesAsync();
+        return policy.Id;
+    }
+
+    public async Task<bool> DeletePolicy(int policyId)
+    {
+        var policy = await _dbContext.Policies.SingleOrDefaultAsync(p => p.Id == policyId);
+        if (policy != null)
+        {
+            policy.IsDeleted = true;
+            await _dbContext.SaveChangesAsync();
+        }
+        return true;
     }
 }
