@@ -10,6 +10,7 @@ namespace PolicyBased.Infra.Dtos
     public class Permission
     {
         public string Name { get; set; }
+        public int Id { get; set; } = default!;
 
         public bool IsSelected { get; set; } = default!;
         

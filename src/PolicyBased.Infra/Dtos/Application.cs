@@ -20,7 +20,7 @@ namespace PolicyBased.Infra.Dtos
         /// <summary>
         /// Represents the policies associated to a Business Application.
         /// </summary>
-        public Policy[] Policies { get; set; }
+        public List<Policy> Policies { get; set; }
 
 
         // TODO: remove this later or refactor to a better design...

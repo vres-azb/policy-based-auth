@@ -10,5 +10,9 @@ namespace PolicyBased.Infra.Persistence.Repositories
         Task SavePolicy(PolicyDtos.Policy policy);
         Task<int> AddNewPolicy(string policyName);
         Task<bool> DeletePolicy(int policyId);
+        Task<int> AddNewRole(int policyId, string roleName);
+        Task<int> AddNewPermission(int policyId, string permName);
+        Task<bool> DeleteRole(int roleId);
+        Task<bool> DeletePermission(int permId);
     }
 }

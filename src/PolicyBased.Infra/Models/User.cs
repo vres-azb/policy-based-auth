@@ -15,7 +15,8 @@ namespace PolicyBased.Infra.Models
         public int Id { get; set; }
         public Guid UserId { get; set; }
         public string UserName { get; set; }
-        public string Password { get; set; }
+        public string Email { get; set; }
+        public int TenantId { get; set; }
         public bool IsDeleted { get; set; }
 
         public virtual ICollection<UserRole> UserRoles { get; set; }

@@ -3,6 +3,8 @@
 @using PolicyBased.Infra.Persistence.Repositories
 @using PolicyDtos = PolicyBased.Infra.Dtos;
 @inject IUserRepo UserRepo;
+@inject IDialogService dialogService;
+@inject IToastService toastService;
 
 <PageTitle>Policies</PageTitle>
 
@@ -14,81 +16,101 @@
     </FluentBreadcrumbItem>
 </FluentBreadcrumb>
 
-<FluentStack Orientation="Orientation.Horizontal" Style="width:100%">
+@if (isLoading)
+{
+    <FluentCard class="card-padding">
+        <FluentSkeleton Shape="SkeletonShape.Rect" Height="10px;" Width="150px"></FluentSkeleton>
+        <FluentSkeleton Style="margin-top: 10px" Height="10px;" Width="550px"></FluentSkeleton>
+        <FluentSkeleton Style="margin-top: 10px" Height="10px;" Width="550px"></FluentSkeleton>
+        <FluentSkeleton Style="margin-top: 10px" Height="10px;" Width="550px"></FluentSkeleton>
+        <FluentSkeleton Style="margin-top: 10px" Height="10px;" Width="550px"></FluentSkeleton>
+        <FluentSkeleton Style="margin-top: 10px" Height="10px;" Width="150px"></FluentSkeleton>
+    </FluentCard>
+}
+else
+{
+    <FluentStack Orientation="Orientation.Horizontal" Style="width:100%">
 
-    <FluentStack Orientation="Orientation.Vertical" HorizontalAlignment="HorizontalAlignment.End" Style="width:70%">
+        <FluentStack Orientation="Orientation.Vertical" HorizontalAlignment="HorizontalAlignment.End" Style="width:70%">
 
-        <FluentButton IconStart="@(new Icons.Regular.Size24.New())" OnClick="(()=>ToggleNewPolicy(isCancel:false))">Add New</FluentButton>
+            <FluentButton IconStart="@(new Icons.Regular.Size24.Add())" Appearance="Appearance.Accent" OnClick="(()=>ToggleNewPolicy(isCancel:false))">New Policy</FluentButton>
 
-        <FluentDataGrid Items="@policyList" ItemKey="(a=>a.Id)" ResizableColumns="false" style="width:100%" GridTemplateColumns="0.2fr 1fr">
-            <EmptyContent>No policies</EmptyContent>
-            <ChildContent>
-                <PropertyColumn Align="Align.Start" Property="@(a => a.Name)" Sortable="true" />
-                <TemplateColumn Title="Policy" Context="policyContext" Align="Align.Start">
-                    <FluentDataGrid Items="@policyContext.Policies.AsQueryable()" GenerateHeader="GenerateHeaderOption.None" GridTemplateColumns="0.2fr 0.2fr  1fr">
-                        <TemplateColumn Title="Actions" Context="pContext">
-                            @{
-                                int policId = pContext.Id;
-                                string policyEditUrl = $"/Policies/Edit/{policId}";
-                            }
-                            <FluentAnchor Href="@policyEditUrl" Appearance="Appearance.Hypertext" IconStart="@(new Icons.Regular.Size24.Edit())">
-                            </FluentAnchor>
-                            <FluentButton OnClick="(()=>DeletePolicy(pContext.Id))" IconStart="@(new Icons.Regular.Size24.Delete())"></FluentButton>
-                        </TemplateColumn>
-                        <PropertyColumn Property="@(p => p.Name)" Sortable="true" />
-                        <TemplateColumn Context="permContext">
-                            @{
-                                var roles = permContext.Roles.AsQueryable();
-                            }
-                            <FluentDataGrid Items="@roles" GridTemplateColumns="0.5fr 1fr">
-                                <PropertyColumn Property="@(p => p.Name)" Title="Role" Sortable="true" />
-                                <TemplateColumn Title="Permissions" Context="roleContext">
+            <FluentDataGrid Items="@policyList.AsQueryable()" ItemKey="(a=>a.Id)" ResizableColumns="false" style="width:100%" GridTemplateColumns="0.2fr 1fr">
+                <EmptyContent>No Applications</EmptyContent>
+                <ChildContent>
+                    <PropertyColumn Align="Align.Start" Property="@(a => a.Name)" Sortable="true" />
+                    <TemplateColumn Title="Policy" Context="policyContext" Align="Align.Start">
+                        <FluentDataGrid Items="@policyContext.Policies.AsQueryable()" GenerateHeader="GenerateHeaderOption.None" GridTemplateColumns="0.2fr 0.2fr  1fr">
+                            <EmptyContent>No policies</EmptyContent>
+                            <ChildContent>
+                                <TemplateColumn Title="Actions" Context="pContext">
                                     @{
-                                        string[] perms = roleContext.Permissions.Select(a => a.Name).ToArray();
-                                        string permsNames = string.Join(", ", perms);
+                                        int policId = pContext.Id;
+                                        string policyEditUrl = $"/Policies/Edit/{policId}";
                                     }
-                                    <FluentLabel>@permsNames</FluentLabel>
+                                    <FluentAnchor Href="@policyEditUrl" Appearance="Appearance.Hypertext" IconStart="@(new Icons.Regular.Size24.Edit())">
+                                    </FluentAnchor>
+                                    <FluentButton OnClick="(()=>DeletePolicy(pContext.Id))" IconStart="@(new Icons.Regular.Size24.Delete())"></FluentButton>
+                                </TemplateColumn>
+                                <PropertyColumn Property="@(p => p.Name)" Sortable="false" />
+                                <TemplateColumn Context="permContext">
+                                    @{
+                                        var roles = permContext.Roles.AsQueryable();
+                                    }
+                                    <FluentDataGrid Items="@roles" GridTemplateColumns="0.5fr 1fr">
+                                        <EmptyContent>No Roles</EmptyContent>
+                                        <ChildContent>
+                                            <PropertyColumn Property="@(p => p.Name)" Title="Role" Sortable="false" />
+                                            <TemplateColumn Title="Permissions" Context="roleContext">
+                                                @{
+                                                    string[] perms = roleContext.Permissions.Select(a => a.Name).ToArray();
+                                                    string permsNames = string.Join(", ", perms);
+                                                }
+                                                <FluentLabel>@permsNames</FluentLabel>
+                                                </TemplateColumn>
+                                            </ChildContent>
+                                        </FluentDataGrid>
                                     </TemplateColumn>
-                                </FluentDataGrid>
-                            </TemplateColumn>
-                        </FluentDataGrid>
-                    </TemplateColumn>
-                </ChildContent>
-            </FluentDataGrid>
-        </FluentStack>
-
-        <FluentDivider Role="DividerRole.Separator" Orientation="Orientation.Vertical" Style="height: 500px;"></FluentDivider>
-
-        @if (showAddNew)
-    {
-        <FluentStack Orientation="Orientation.Vertical" Style="width:20%">
-            <FluentStack Orientation="Orientation.Horizontal" >
-                <FluentTextField Placeholder="Policy Name" @bind-Value="newPolicyName"></FluentTextField>
-                <FluentButton OnClick="(()=>AddNewPolicy())">Save</FluentButton>
-                <FluentButton OnClick="(()=>ToggleNewPolicy(isCancel:true))">Cancel</FluentButton>
+                                </ChildContent>
+                            </FluentDataGrid>
+                        </TemplateColumn>
+                    </ChildContent>
+                </FluentDataGrid>
             </FluentStack>
-            <FluentStack Orientation="Orientation.Horizontal">
 
-                @if (newPolicyEditUrl != string.Empty)
-                {
-                    <FluentAnchor Appearance="Appearance.Hypertext" Href="@newPolicyEditUrl">Configure the policy</FluentAnchor>
-                }
+            <FluentDivider Role="DividerRole.Separator" Orientation="Orientation.Vertical" Style="height: 500px;"></FluentDivider>
+
+            @if (showAddNew)
+        {
+            <FluentStack Orientation="Orientation.Vertical" Style="width:20%">
+                <FluentStack Orientation="Orientation.Horizontal">
+                    <FluentTextField Placeholder="Policy Name" @bind-Value="newPolicyName"></FluentTextField>
+                    <FluentButton OnClick="(()=>AddNewPolicy())" Disabled="string.IsNullOrEmpty(newPolicyName)" Appearance="Appearance.Accent">Save</FluentButton>
+                    <FluentButton OnClick="(()=>ToggleNewPolicy(isCancel:true))">Cancel</FluentButton>
+                </FluentStack>
+                <FluentStack Orientation="Orientation.Horizontal">
+
+                    @if (newPolicyEditUrl != string.Empty)
+                    {
+                        <FluentAnchor Appearance="Appearance.Hypertext" Href="@newPolicyEditUrl">Configure the policy</FluentAnchor>
+                    }
+                </FluentStack>
             </FluentStack>
-        </FluentStack>
-    }
-</FluentStack>
-
+        }
+    </FluentStack>
+}
 @code {
-    IQueryable<PolicyDtos.Application>? policyList = null;
+    List<PolicyDtos.Application>? policyList = new();
     int currentAppId;
     bool showAddNew = false;
     string newPolicyName = string.Empty;
     string newPolicyEditUrl = string.Empty;
-
+    bool isLoading = true;
     protected override async Task OnInitializedAsync()
     {
         var allPolicies = await UserRepo.GetPolicies();
-        policyList = allPolicies.AsQueryable();
+        policyList = allPolicies;
+        isLoading = false;
     }
 
     void ToggleNewPolicy(bool isCancel)
@@ -107,11 +129,32 @@
     {
         int newPolicyId = await UserRepo.AddNewPolicy(newPolicyName);
         newPolicyEditUrl = $"/Policies/Edit/{newPolicyId}";
+
+        policyList.FirstOrDefault(a => a.Id == 1).Policies.Add(new PolicyDtos.Policy() { Name = newPolicyName, Id = newPolicyId });
+        //StateHasChanged();
     }
 
     async Task DeletePolicy(int policyId)
     {
-        await UserRepo.DeletePolicy(policyId);
-        StateHasChanged();
+        var dialog = await dialogService.ShowConfirmationAsync($"Do you want to delete the policy {policyId}?", "Yup", "Nope", "Delete Policy");
+        var result = await dialog.Result;
+        var canceled = result.Cancelled;
+
+        if (!canceled)
+        {
+            var isDeleted = await UserRepo.DeletePolicy(policyId); ;
+            if (isDeleted)
+            {
+                toastService.ShowSuccess($"Policy {policyId} deleted", 5000);
+                var allPolicies = await UserRepo.GetPolicies();
+                policyList = allPolicies;
+                StateHasChanged();
+            }
+            else
+            {
+                toastService.ShowError($"Error on deleting the policy {policyId}", 5000);
+            }
+        }
+
     }
 }

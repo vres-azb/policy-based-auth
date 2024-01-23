@@ -20,16 +20,17 @@ namespace AuthAdminUI
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
-            var connectionString = builder.Configuration.GetConnectionString("AuthAdminUIContextConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-            builder.Services.AddDbContext<AuthAdminUIContext>(options =>
-                options.UseSqlite(connectionString));
-            builder.Services.AddDatabaseDeveloperPageExceptionFilter();
-            builder.Services.AddDefaultIdentity<AuthAdminUIUser>(options => options.SignIn.RequireConfirmedAccount = false)
-                .AddEntityFrameworkStores<AuthAdminUIContext>();
+            //var connectionString = builder.Configuration.GetConnectionString("AuthAdminUIContextConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+            
+            //builder.Services.AddDbContext<AuthAdminUIContext>(options =>
+            //    options.UseSqlite(connectionString));
+            //builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+            //builder.Services.AddDefaultIdentity<AuthAdminUIUser>(options => options.SignIn.RequireConfirmedAccount = false)
+            //    .AddEntityFrameworkStores<AuthAdminUIContext>();
+            //builder.Services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<AuthAdminUIUser>>();
+
             builder.Services.AddRazorPages();
             builder.Services.AddServerSideBlazor();
-            builder.Services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<AuthAdminUIUser>>();
-            builder.Services.AddSingleton<WeatherForecastService>();
             builder.Services.AddFluentUIComponents();
             var services = builder.Services;
             services.AddScoped<IDataContextFactory, DataContextFactory>();

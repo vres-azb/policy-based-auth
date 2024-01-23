@@ -10,6 +10,8 @@ namespace PolicyBased.Infra.Models
         public Policy()
         {
             AppPolicies = new HashSet<AppPolicy>();
+            Permissions = new HashSet<Permission>();
+            Roles = new HashSet<Role>();
         }
 
         public int Id { get; set; }
@@ -19,5 +21,7 @@ namespace PolicyBased.Infra.Models
 
         public virtual Application Application { get; set; }
         public virtual ICollection<AppPolicy> AppPolicies { get; set; }
+        public virtual ICollection<Permission> Permissions { get; set; }
+        public virtual ICollection<Role> Roles { get; set; }
     }
 }

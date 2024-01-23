@@ -3,7 +3,10 @@
 @using PolicyBased.Infra.Persistence.Repositories
 @using PolicyDtos = PolicyBased.Infra.Dtos;
 
+@inject IDialogService dialogService;
+@inject IToastService toastService;
 @inject IUserRepo UserRepo;
+@inject NavigationManager navMgr;
 
 <FluentBreadcrumb Style="padding-bottom:5px;">
     @{
@@ -17,7 +20,7 @@
         @dataPolicy.Name
     </FluentBreadcrumbItem>
     <FluentBreadcrumbItem Style="font-weight:bolder;font-size:medium">
-        @curRoleName
+        @selRole?.Name
     </FluentBreadcrumbItem>
 </FluentBreadcrumb>
 
@@ -31,20 +34,21 @@
 
     <FluentStack Orientation="Orientation.Vertical" Style="width:60%;" HorizontalAlignment="HorizontalAlignment.Left">
         <FluentLabel Typo="Typography.PaneHeader"> Roles </FluentLabel>
+        <FluentStack Orientation="Orientation.Horizontal">
+            <FluentTextField Placeholder="Role Name" @bind-Value="newRoleName" Size="45"></FluentTextField>
+            <FluentButton IconStart="@(new Icons.Regular.Size24.Add())" Appearance="Appearance.Accent" Disabled="string.IsNullOrEmpty(newRoleName)" OnClick="@(()=> AddNewRole())">Add</FluentButton>
+        </FluentStack>
         @if (isLoaded)
         {
-            <FluentDataGrid Items="allRoles.AsQueryable()" Style="width:500px;">
+            <FluentDataGrid Id="dgRole" Items="allRoles.AsQueryable()" RowStyle="@rowStyle" RowClass="@rowClass" Style="width:500px;"
+                            ItemKey="((a)=>a.RoleId)" TGridItem="PolicyDtos.Role">
                 <EmptyContent>No Roles</EmptyContent>
                 <ChildContent>
-                    <TemplateColumn Style="width:50px;">
-                        <FluentCheckbox @bind-Value="context.IsSelected"></FluentCheckbox>
-                    </TemplateColumn>
-                    <PropertyColumn Align="Align.Start" Property="@(a => a.Name)" Style="width:350px;" Sortable="true" />
+                    <PropertyColumn Align="Align.Start" Property="@(a => a.Name)" Style="width:350px;" Sortable="false" />
                     <TemplateColumn Title="Actions" Style="width:200px;">
-                        <FluentButton IconStart="@(new Icons.Regular.Size24.Edit())" @onclick="@((p) => EditRole(context.Name))"></FluentButton>
-                        @* <FluentButton IconStart="@(new Icons.Regular.Size24.Delete())" @onclick="@((p) => DeleteRole(context.Name))"></FluentButton> *@
+                        <FluentButton IconStart="@(new Icons.Regular.Size24.List())" Title="View Details" OnClick="@(() => ViewRole(context))"></FluentButton>
+                        <FluentButton IconStart="@(new Icons.Regular.Size24.Delete())" OnClick="@(() => DeleteRole(context.RoleId))"></FluentButton>
                     </TemplateColumn>
-
                 </ChildContent>
             </FluentDataGrid>
         }
@@ -54,26 +58,32 @@
     {
         <FluentStack Orientation="Orientation.Vertical">
             <FluentLabel Typo="Typography.PaneHeader"> Permissions </FluentLabel>
-            <FluentDataGrid Items="permList" Style="width:400px;">
+            <FluentStack Orientation="Orientation.Horizontal">
+                <FluentTextField Placeholder="Permission Name" @bind-Value="newPermName" Size="40"></FluentTextField>
+                <FluentButton IconStart="@(new Icons.Regular.Size24.Add())" Appearance="Appearance.Accent" Disabled="string.IsNullOrEmpty(newPermName)" OnClick="@(()=> AddNewPerm())">Add</FluentButton>
+            </FluentStack>
+            <FluentDataGrid Items="permList" Style="width:500px;" ItemKey="(a)=>a.Id" GridTemplateColumns="0.1fr 1fr">
                 <EmptyContent>No policies</EmptyContent>
                 <ChildContent>
-                    <TemplateColumn Style="width:50px;">
+                    <TemplateColumn>
                         <FluentCheckbox @bind-Value="context.IsSelected"></FluentCheckbox>
                     </TemplateColumn>
-                    <PropertyColumn Align="Align.Start" Property="@(a => a.Name)" Style="width:250px;" Sortable="true" />
+                    <PropertyColumn Align="Align.Start" Property="@(a => a.Name)" Sortable="false" />
+                    <TemplateColumn Title="Actions">
+                        <FluentButton IconStart="@(new Icons.Regular.Size24.Delete())" OnClick="@((p) => DeletePermission(context.Id))"></FluentButton>
+                    </TemplateColumn>
                 </ChildContent>
             </FluentDataGrid>
 
-
             <FluentLabel Typo="Typography.PaneHeader"> Users </FluentLabel>
-            <FluentDataGrid Items="roleUsers" Style="width:500px;">
+            <FluentDataGrid Items="roleUsers" Style="width:500px;" GridTemplateColumns="0.1fr 0.4fr 0.4fr">
                 <EmptyContent>No Users</EmptyContent>
                 <ChildContent>
                     <TemplateColumn Style="width:50px;">
                         <FluentCheckbox @bind-Value="context.IsSelected"></FluentCheckbox>
                     </TemplateColumn>
-                    <PropertyColumn Align="Align.Start" Property="@(a => a.UserId)" Style="width:250px;" Sortable="true" />
-                    <PropertyColumn Align="Align.Start" Property="@(a => a.UserName)" Style="width:250px;" Sortable="true" />
+                    <PropertyColumn Align="Align.Start" Property="@(a => a.Email)" Style="width:250px;" Sortable="false" />
+                    <PropertyColumn Align="Align.Start" Property="@(a => a.UserName)" Style="width:250px;" Sortable="false" />
                 </ChildContent>
             </FluentDataGrid>
         </FluentStack>
@@ -84,12 +94,14 @@
     bool isLoaded = false;
     IQueryable<PolicyDtos.Subject>? roleUsers = null;
     IQueryable<PolicyDtos.Permission> permList = null;
-    private bool showDetailPanel = false;
+    bool showDetailPanel = false;
     List<PolicyDtos.Role> allRoles = null;
-    string? curRoleName;
+    PolicyDtos.Role? selRole;
+    string? newRoleName;
+    string? newPermName;
 
     [Parameter]
-    public string PolicyId { get; set; }
+    public string PolicyId { get; set; } = default!;
 
     protected override async Task OnInitializedAsync()
     {
@@ -98,45 +110,118 @@
         isLoaded = true;
     }
 
-    public async Task EditRole(string roleName)
+    Func<PolicyDtos.Role, string?> rowClass = x => (x?.Name != "") ? "grid-row" : null;
+    Func<PolicyDtos.Role, string?> rowStyle = x => x.IsSelected ? "background-color: #cce;" : null;
+
+    protected void HandleRowFocus(FluentDataGridRow<PolicyDtos.Role> e)
     {
-        showDetailPanel = true;
-        var allUsers = await UserRepo.GetAllUsers();
-        var selRole = allRoles.FirstOrDefault(a => a.Name == roleName);
-        if (selRole != null)
+        if (e.RowType != DataGridRowType.Header)
         {
-            curRoleName = selRole.Name;
+            // clear the prev selected row
+            allRoles.ForEach(r => r.IsSelected = false);
+            showDetailPanel = true;
+            selRole = e.Item;
+            selRole!.IsSelected = true;
             roleUsers = selRole.Subjects.AsQueryable();
             permList = selRole.Permissions.AsQueryable();
         }
     }
 
+    private void ViewRole(PolicyDtos.Role selRole)
+    {
+        allRoles.ForEach(r => r.IsSelected = false);
+        showDetailPanel = true;
+        selRole!.IsSelected = true;
+        roleUsers = selRole.Subjects.AsQueryable();
+        permList = selRole.Permissions.AsQueryable();
+    }
+
     private async Task SaveAsync()
     {
         await UserRepo.SavePolicy(dataPolicy);
+        navMgr.NavigateTo("/");
     }
 
-    public async Task DeleteRole(string roleName)
+    private async Task AddNewRole()
     {
-        // var dialog = await dialogService.ShowConfirmationAsync($"Do you want to delete the role {roleName}?", "Yup", "Nope", "Delete Role");
-        // var result = await dialog.Result;
-        // var canceled = result.Cancelled;
+        int policyId = int.Parse(PolicyId);
+        var roleId = await UserRepo.AddNewRole(policyId, newRoleName);
 
-        // if (!canceled)
-        // {
-        //     var isDeleted = true;//await dataService.DeleteBatch(batchId);
-        //     toastService.ClearAll();
-        //     if (isDeleted)
-        //     {
-        //         toastService.ShowSuccess($"{batchId} deleted", 5000);
+        // set the intial perms to the new role by taking any existing role
+        var firstRole = allRoles.FirstOrDefault();
+        List<PolicyDtos.Permission> defPerms = new List<PolicyDtos.Permission>();
+        List<PolicyDtos.Subject> defUsers = new();
+        defUsers = await UserRepo.GetAllUsers();
 
-        //         var siteData = await dataService.GetBatches();
-        //         siteList = siteData.AsQueryable();
-        //     }
-        //     else
-        //     {
-        //         toastService.ShowError($"Error on deleting the batch {batchId}", 5000);
-        //     }
-        // }
+        if (firstRole != null)
+        {
+            defPerms = firstRole.Permissions;
+            defPerms.ForEach(a => a.IsSelected = false);
+        }
+
+        allRoles.Add(new PolicyDtos.Role()
+            {
+                RoleId = roleId,
+                Name = newRoleName,
+                PolicyId = policyId,
+                Permissions = defPerms,
+                Subjects = defUsers
+            });
+
+        newRoleName = null;
+        StateHasChanged();
+    }
+
+    private async Task AddNewPerm()
+    {
+        var permId = await UserRepo.AddNewPermission(int.Parse(PolicyId), newPermName);
+        var newPerm = new PolicyDtos.Permission() { Id = permId, Name = newPermName };
+        permList = selRole.Permissions.AsQueryable();
+        allRoles.ForEach(r => r.Permissions.Add(newPerm));
+        newPermName = null;
+        StateHasChanged();
+    }
+
+    public async Task DeleteRole(int roleId)
+    {
+        var dialog = await dialogService.ShowConfirmationAsync($"Do you want to delete the role {roleId}?", "Yup", "Nope", "Delete Role");
+        var result = await dialog.Result;
+        var canceled = result.Cancelled;
+
+        if (!canceled)
+        {
+            var isDeleted = await UserRepo.DeleteRole(roleId);
+            if (isDeleted)
+            {
+                allRoles.RemoveAt(allRoles.FindIndex(a => a.RoleId == roleId));
+                toastService.ShowSuccess($"Role {roleId} is deleted", 5000);
+            }
+            else
+            {
+                toastService.ShowError($"Error on deleting the role {roleId}", 5000);
+            }
+        }
+    }
+
+    public async Task DeletePermission(int permId)
+    {
+        var dialog = await dialogService.ShowConfirmationAsync($"Do you want to delete the permission {permId}?", "Yup", "Nope", "Delete Permission");
+        var result = await dialog.Result;
+        var canceled = result.Cancelled;
+
+        if (!canceled)
+        {
+            var isDeleted = await UserRepo.DeletePermission(permId);
+            if (isDeleted)
+            {
+                selRole.Permissions.RemoveAt(selRole.Permissions.FindIndex(a => a.Id == permId));
+                toastService.ShowSuccess($"Permission {permId} is deleted", 5000);
+                permList = selRole.Permissions.AsQueryable();
+            }
+            else
+            {
+                toastService.ShowError($"Error on deleting the permission {permId}", 5000);
+            }
+        }
     }
 }

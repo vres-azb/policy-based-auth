@@ -15,10 +15,10 @@ namespace PolicyBased.Infra.Models
 
         public int Id { get; set; }
         public string RoleName { get; set; }
-        public int ApplicationId { get; set; }
+        public int PolicyId { get; set; }
         public bool IsDeleted { get; set; }
 
-        public virtual Application Application { get; set; }
+        public virtual Policy Policy { get; set; }
         public virtual ICollection<AppPolicy> AppPolicies { get; set; }
         public virtual ICollection<UserRole> UserRoles { get; set; }
     }

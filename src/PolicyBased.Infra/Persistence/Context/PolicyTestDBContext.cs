@@ -65,11 +65,11 @@ namespace PolicyBased.Infra.Persistence.Context
                     .HasMaxLength(50)
                     .IsUnicode(false);
 
-                entity.HasOne(d => d.Application)
+                entity.HasOne(d => d.Policy)
                     .WithMany(p => p.Permissions)
-                    .HasForeignKey(d => d.ApplicationId)
+                    .HasForeignKey(d => d.PolicyId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_Permissions_Applications");
+                    .HasConstraintName("FK_Permissions_Policies");
             });
 
             modelBuilder.Entity<Policy>(entity =>
@@ -93,16 +93,17 @@ namespace PolicyBased.Infra.Persistence.Context
                     .HasMaxLength(50)
                     .IsUnicode(false);
 
-                entity.HasOne(d => d.Application)
+                entity.HasOne(d => d.Policy)
                     .WithMany(p => p.Roles)
-                    .HasForeignKey(d => d.ApplicationId)
+                    .HasForeignKey(d => d.PolicyId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_Roles_Applications");
             });
 
             modelBuilder.Entity<User>(entity =>
             {
-                entity.Property(e => e.Password)
+                entity.Property(e => e.Email)
+                    .IsRequired()
                     .HasMaxLength(50)
                     .IsUnicode(false);
 
