@@ -40,7 +40,7 @@ else
                 <ChildContent>
                     <PropertyColumn Align="Align.Start" Property="@(a => a.Name)" Sortable="true" />
                     <TemplateColumn Title="Policy" Context="policyContext" Align="Align.Start">
-                        <FluentDataGrid Items="@policyContext.Policies.AsQueryable()" GenerateHeader="GenerateHeaderOption.None" GridTemplateColumns="0.2fr 0.2fr  1fr">
+                        <FluentDataGrid Items="@policyContext.Policies.AsQueryable()" GenerateHeader="GenerateHeaderOption.None" GridTemplateColumns="0.2fr 0.5fr  1fr">
                             <EmptyContent>No policies</EmptyContent>
                             <ChildContent>
                                 <TemplateColumn Title="Actions" Context="pContext">
@@ -57,30 +57,30 @@ else
                                     @{
                                         var roles = permContext.Roles.AsQueryable();
                                     }
-                                    <FluentDataGrid Items="@roles" GridTemplateColumns="0.5fr 1fr">
+                                    <FluentDataGrid Items="@roles" GridTemplateColumns="1fr 1fr">
                                         <EmptyContent>No Roles</EmptyContent>
                                         <ChildContent>
                                             <PropertyColumn Property="@(p => p.Name)" Title="Role" Sortable="false" />
                                             <TemplateColumn Title="Permissions" Context="roleContext">
                                                 @{
                                                     string[] perms = roleContext.Permissions.Select(a => a.Name).ToArray();
-                                                    string permsNames = string.Join(", ", perms);
+                                                    MarkupString permsNames = (MarkupString)string.Join("<br/>", perms);
                                                 }
                                                 <FluentLabel>@permsNames</FluentLabel>
-                                                </TemplateColumn>
-                                            </ChildContent>
-                                        </FluentDataGrid>
-                                    </TemplateColumn>
-                                </ChildContent>
-                            </FluentDataGrid>
-                        </TemplateColumn>
-                    </ChildContent>
-                </FluentDataGrid>
-            </FluentStack>
+                                            </TemplateColumn>
+                                        </ChildContent>
+                                    </FluentDataGrid>
+                                </TemplateColumn>
+                            </ChildContent>
+                        </FluentDataGrid>
+                    </TemplateColumn>
+                </ChildContent>
+            </FluentDataGrid>
+        </FluentStack>
 
-            <FluentDivider Role="DividerRole.Separator" Orientation="Orientation.Vertical" Style="height: 500px;"></FluentDivider>
+        <FluentDivider Role="DividerRole.Separator" Orientation="Orientation.Vertical" Style="height: 500px;"></FluentDivider>
 
-            @if (showAddNew)
+        @if (showAddNew)
         {
             <FluentStack Orientation="Orientation.Vertical" Style="width:20%">
                 <FluentStack Orientation="Orientation.Horizontal">

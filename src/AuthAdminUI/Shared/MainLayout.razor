@@ -1,31 +1,11 @@
 ﻿@inherits LayoutComponentBase
 
 <PageTitle>AuthAdminUI</PageTitle>
-
-@* <div class="page">
-    <div class="sidebar">
-        <NavMenu />
-    </div>
-
-    <main>
-        <div class="top-row px-4 auth">
-            <LoginDisplay />
-            <a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a>
-        </div>
-
-        <article class="content px-4">
-            @Body
-        </article>
-    </main>
-</div>
- *@
 <FluentLayout>
-    @* <ProfileSettings></ProfileSettings> *@
     <LoginDisplay />
     <FluentStack Class="main" Orientation="Orientation.Horizontal" Width="100%">
         <NavMenu />
-
-        <FluentDivider Style="min-height:700px" Role="DividerRole.Presentation" Orientation="Orientation.Vertical"></FluentDivider>
+        <FluentDivider Style="min-height:100%" Role="DividerRole.Presentation" Orientation="Orientation.Vertical"></FluentDivider>
         <FluentBodyContent>
             <div class="content">
                 @Body
@@ -33,10 +13,10 @@
         </FluentBodyContent>
         <FluentDialogProvider />
         <FluentToastContainer MaxToastCount="10" />
-    </FluentStack>
 
-    <FluentFooter>
+    </FluentStack>
+    @* <FluentFooter>
         Test Policy Server
-    </FluentFooter>
+    </FluentFooter> *@
 </FluentLayout>
 

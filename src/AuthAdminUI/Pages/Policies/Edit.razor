@@ -24,11 +24,14 @@
     </FluentBreadcrumbItem>
 </FluentBreadcrumb>
 
-<FluentStack Orientation="Orientation.Vertical" HorizontalAlignment="HorizontalAlignment.Left">
-    <FluentDivider Role="DividerRole.Separator" Orientation="Orientation.Horizontal" Style="width: 100%;"></FluentDivider>
+<FluentDivider Role="DividerRole.Separator" Orientation="Orientation.Horizontal" Style="width: 100%; padding-bottom:5px;"></FluentDivider>
+<FluentStack Orientation="Orientation.Horizontal" HorizontalAlignment="HorizontalAlignment.Center">
     <FluentButton Appearance="Appearance.Accent" OnClick="@(()=> SaveAsync())" Title="Save" Value="Save Policy" IconStart="@(new Icons.Regular.Size24.Save())">
         Save Policy
     </FluentButton>
+    <FluentAnchor Href="/">
+        Cancel
+    </FluentAnchor>
 </FluentStack>
 <FluentStack Orientation="Orientation.Horizontal">
 
@@ -127,8 +130,9 @@
         }
     }
 
-    private void ViewRole(PolicyDtos.Role selRole)
+    private void ViewRole(PolicyDtos.Role curRole)
     {
+        selRole = curRole;
         allRoles.ForEach(r => r.IsSelected = false);
         showDetailPanel = true;
         selRole!.IsSelected = true;

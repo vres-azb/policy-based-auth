@@ -6,6 +6,9 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using PolicyBased.Contracts.Services;
+using PolicyBased.Infra.Persistence.Context;
+using PolicyBased.Infra.Services;
 
 namespace Host
 {
@@ -37,6 +40,14 @@ namespace Host
 
             // this adds the necessary handler for our custom medication requirement
             services.AddTransient<IAuthorizationHandler, CustomBizLogRequirementHandler>();
+            services.AddScoped<IDataContextFactory, DataContextFactory>();
+            services.AddScoped(provider =>
+            {
+                var factory = provider.GetRequiredService<IDataContextFactory>();
+                return factory.CreateContext();
+            });
+            services.AddScoped<IPermissionService, PermissionService>();
+
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

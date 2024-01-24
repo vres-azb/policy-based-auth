@@ -4,6 +4,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using FakeRepos;
 using PolicyBased.Contracts;
+using PolicyBased.Contracts.Services;
 
 namespace PolicyServer.Runtime.Client
 {
@@ -13,14 +14,17 @@ namespace PolicyServer.Runtime.Client
     public class PolicyServerRuntimeClient : IPolicyServerRuntimeClient
     {
         private readonly BusinessApplications _businessApplications;
+        private readonly IPermissionService _permissionService;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PolicyServerRuntimeClient"/> class.
         /// </summary>
         /// <param name="applications">The Business pplications.</param>
-        public PolicyServerRuntimeClient(BusinessApplications applications)
+        /// <param name="permissionService"></param>
+        public PolicyServerRuntimeClient(BusinessApplications applications, IPermissionService permissionService)
         {
             this._businessApplications =  applications;
+            _permissionService = permissionService;
         }
 
         /// <summary>
@@ -58,7 +62,7 @@ namespace PolicyServer.Runtime.Client
             if (user == null)
                 throw new ArgumentNullException(nameof(user));
 
-            return this._businessApplications.EvaluateAsync(user);
+            return this._businessApplications.EvaluateAsync(user, _permissionService);
         }
     }
 }
