@@ -100,7 +100,7 @@ public class UserRepo : IUserRepo
                 r.Subjects.Add(new PolicyDtos.Subject()
                 {
                     UserName = u.UserName,
-                    UserId = u.UserId.ToString(),
+                    UserId = u.UserId,
                     Email = u.Email,
                     Id = u.Id,
                     IsSelected = isExists
