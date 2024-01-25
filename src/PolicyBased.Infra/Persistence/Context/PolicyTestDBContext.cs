@@ -34,6 +34,8 @@ namespace PolicyBased.Infra.Persistence.Context
 
             modelBuilder.Entity<AppPolicy>(entity =>
             {
+                entity.ToTable("AppPolicies", "pbac");
+
                 entity.HasOne(d => d.Permission)
                     .WithMany(p => p.AppPolicies)
                     .HasForeignKey(d => d.PermissionId)
@@ -55,6 +57,8 @@ namespace PolicyBased.Infra.Persistence.Context
 
             modelBuilder.Entity<Application>(entity =>
             {
+                entity.ToTable("Applications", "pbac");
+
                 entity.Property(e => e.Name)
                     .IsRequired()
                     .HasMaxLength(50)
@@ -63,6 +67,8 @@ namespace PolicyBased.Infra.Persistence.Context
 
             modelBuilder.Entity<Permission>(entity =>
             {
+                entity.ToTable("Permissions", "pbac");
+
                 entity.Property(e => e.Name)
                     .IsRequired()
                     .HasMaxLength(50)
@@ -77,6 +83,8 @@ namespace PolicyBased.Infra.Persistence.Context
 
             modelBuilder.Entity<Policy>(entity =>
             {
+                entity.ToTable("Policies", "pbac");
+
                 entity.Property(e => e.Name)
                     .IsRequired()
                     .HasMaxLength(50)
@@ -91,6 +99,8 @@ namespace PolicyBased.Infra.Persistence.Context
 
             modelBuilder.Entity<Role>(entity =>
             {
+                entity.ToTable("Roles", "pbac");
+
                 entity.Property(e => e.RoleName)
                     .IsRequired()
                     .HasMaxLength(50)
@@ -105,10 +115,19 @@ namespace PolicyBased.Infra.Persistence.Context
 
             modelBuilder.Entity<User>(entity =>
             {
+                entity.ToTable("Users", "pbac");
+
+                entity.HasIndex(e => e.Id, "IX_Users_UserName")
+                    .IsUnique();
+
                 entity.Property(e => e.Email)
                     .IsRequired()
                     .HasMaxLength(50)
                     .IsUnicode(false);
+
+                entity.Property(e => e.UserId)
+                    .IsRequired()
+                    .HasMaxLength(256);
 
                 entity.Property(e => e.UserName)
                     .IsRequired()
@@ -118,6 +137,8 @@ namespace PolicyBased.Infra.Persistence.Context
 
             modelBuilder.Entity<UserRole>(entity =>
             {
+                entity.ToTable("UserRoles", "pbac");
+
                 entity.HasOne(d => d.Role)
                     .WithMany(p => p.UserRoles)
                     .HasForeignKey(d => d.RoleId)
@@ -131,6 +152,7 @@ namespace PolicyBased.Infra.Persistence.Context
                     .HasConstraintName("FK_UserRoles_Users");
             });
 
+            OnModelCreatingGeneratedProcedures(modelBuilder);
             OnModelCreatingPartial(modelBuilder);
         }
 

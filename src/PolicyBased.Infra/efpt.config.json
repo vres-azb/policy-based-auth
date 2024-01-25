@@ -16,32 +16,36 @@
    "T4TemplatePath": null,
    "Tables": [
       {
-         "Name": "[dbo].[Applications]",
+         "Name": "[pbac].[Applications]",
          "ObjectType": 0
       },
       {
-         "Name": "[dbo].[AppPolicies]",
+         "Name": "[pbac].[AppPolicies]",
          "ObjectType": 0
       },
       {
-         "Name": "[dbo].[Permissions]",
+         "Name": "[pbac].[Permissions]",
          "ObjectType": 0
       },
       {
-         "Name": "[dbo].[Policies]",
+         "Name": "[pbac].[Policies]",
          "ObjectType": 0
       },
       {
-         "Name": "[dbo].[Roles]",
+         "Name": "[pbac].[Roles]",
          "ObjectType": 0
       },
       {
-         "Name": "[dbo].[UserRoles]",
+         "Name": "[pbac].[UserRoles]",
          "ObjectType": 0
       },
       {
-         "Name": "[dbo].[Users]",
+         "Name": "[pbac].[Users]",
          "ObjectType": 0
+      },
+      {
+         "Name": "[pbac].[GetUserPermissions]",
+         "ObjectType": 1
       }
    ],
    "UiHint": "tr-lt-087\\localdb#0e7350dd.PolicyTestDB.dbo",
