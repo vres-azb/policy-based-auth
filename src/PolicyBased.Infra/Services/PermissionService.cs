@@ -38,6 +38,7 @@ namespace PolicyBased.Infra.Services
                     var pol = new PolicyRow()
                     {
                         UserId = rdr.GetInt32("userid"),
+                        PolicyName = rdr.GetString("PolicyName"),
                         Permission = rdr.GetString("PermissionName"),
                         Role = rdr.GetString("RoleName"),
                     };
@@ -48,9 +49,10 @@ namespace PolicyBased.Infra.Services
             {
                 await dbCon.CloseAsync();
             }
+            var policies = polList.Select(a => a.PolicyName).Distinct().AsEnumerable();
             var roles = polList.Select(a => a.Role).Distinct().AsEnumerable();
             var permissions = polList.Select(a => a.Permission).Distinct().AsEnumerable();
-            return new PolicyResult() { Roles = roles, Permissions = permissions };
+            return new PolicyResult() { Policies = policies, Roles = roles, Permissions = permissions };
         }
 
         public async Task<LoggedInUser> GetLoggedInUserAsync(string userName)
@@ -83,7 +85,7 @@ namespace PolicyBased.Infra.Services
             public int UserId { get; set; } = default!;
             public string Permission { get; set; } = default!;
             public string Role { get; set; } = default!;
-
+            public string PolicyName { get; internal set; }
         }
     }
 }

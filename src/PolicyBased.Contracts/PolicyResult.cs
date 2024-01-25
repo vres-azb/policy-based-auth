@@ -8,6 +8,11 @@ namespace PolicyBased.Contracts
     public class PolicyResult
     {
         /// <summary>
+        /// The name of the policy
+        /// </summary>
+        public IEnumerable<string> Policies { get; set; }
+
+        /// <summary>
         /// Gets the roles.
         /// </summary>
         /// <value>

@@ -33,12 +33,14 @@ namespace PolicyServer.Runtime.Client.AspNetCore
             {
                 var policy = await client.EvaluateAsync(context.User);
 
+                var policies= policy.Policies.Select(x => new Claim("policy", x));
                 var roleClaims = policy.Roles.Select(x => new Claim("role", x));
                 var permissionClaims = policy.Permissions.Select(x => new Claim("permission", x));
 
                 var id = new ClaimsIdentity("PolicyServerMiddleware", "name", "role");
                 id.AddClaims(roleClaims);
                 id.AddClaims(permissionClaims);
+                id.AddClaims(policies);
 
                 context.User.AddIdentity(id);
             }

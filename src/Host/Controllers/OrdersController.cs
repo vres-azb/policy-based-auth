@@ -16,7 +16,7 @@ namespace Host.Controllers
             _authz = authz;
         }
 
-        [Authorize("MANAGE")]
+        //[Authorize("MANAGE")]
         public async Task<IActionResult> Create()
         {
             var isUserAllowed = await this._authz.AuthorizeAsync(User, "MANAGE");
