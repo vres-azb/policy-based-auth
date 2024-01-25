@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Host.AspNetCorePolicy;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
@@ -31,12 +32,22 @@ namespace Host
             // typically authentication would be done using an external provider
             services
                 .AddAuthentication("abes-sso-cookie")
-                .AddCookie("abes-sso-cookie"); // TODO: make cookie secure per https://datatracker.ietf.org/doc/html/draft-ietf-httpbis-rfc6265bis#name-cookie-name-prefixes
+                .AddCookie("abes-sso-cookie", options =>
+                {
+                    options.Events.OnSigningOut = async e =>
+                    {
+                        var s = e;
+                        await Task.CompletedTask;
+                    };
+
+                }); // TODO: make cookie secure per https://datatracker.ietf.org/doc/html/draft-ietf-httpbis-rfc6265bis#name-cookie-name-prefixes
 
             // this sets up the PolicyServer client library and policy provider - configuration is loaded from appsettings.json
             // services.AddPolicyServerClient(Configuration.GetSection("Policy"))
             services.AddPolicyServerClient()
             .AddAuthorizationPermissionPolicies();
+
+            //services.AddAuthorizationPolicyEvaluator();
 
             // this adds the necessary handler for our custom medication requirement
             services.AddTransient<IAuthorizationHandler, CustomBizLogRequirementHandler>();
@@ -46,8 +57,8 @@ namespace Host
                 var factory = provider.GetRequiredService<IDataContextFactory>();
                 return factory.CreateContext();
             });
-            services.AddScoped<IPermissionService, PermissionService>();
 
+            services.AddScoped<IPermissionService, PermissionService>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -68,7 +79,8 @@ namespace Host
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapDefaultControllerRoute().RequireAuthorization();
+                endpoints.MapDefaultControllerRoute()
+                .RequireAuthorization();
             });
         }
     }

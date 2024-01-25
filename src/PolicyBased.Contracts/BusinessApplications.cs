@@ -21,14 +21,6 @@ namespace PolicyBased.Contracts
         {
             if (user == null) throw new ArgumentNullException(nameof(user));
 
-            // TODO: This may not be needed as we are getting the daa from DB
-            Application app = Applications.FirstOrDefault(x => x.Id == 1);
-            Policy policy = app.Policies.FirstOrDefault(x => x.Id == 1);
-
-
-            var roles = policy.Roles.Where(x => x.Evaluate(user)).Select(x => x.Name).ToArray();
-            var permissions = policy.Permissions.Where(x => x.Evaluate(roles)).Select(x => x.Name).ToArray();
-
             var polResult = new PolicyResult();
 
             ClaimsPrincipal currentUser = user;

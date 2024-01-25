@@ -60,11 +60,26 @@ namespace Host.Controllers
             return View("success");
         }
 
-        [Authorize("CanExportOrderToPDF")]
+        // Q: What is the code flow when the Authorize attribute is disabled vs enabled?
+        //[Authorize("CanExportOrderToPDF")]
         public async Task<IActionResult> CanExportOrderToPDF()
         {
             // or imperatively
-            var canExportOrderToPDF = await _client.HasPermissionAsync(User, "CanExportOrderToPDF");
+            // Q: is the logged in user associated to a policy?
+            var isUserAllowed = await this._authz.AuthorizeAsync(User, "MANAGE.");
+            var policyResult = await this._client.EvaluateAsync(User);
+
+            // Q: Has the logged in user permission based on the app-soecific roles?
+            var hasPermissionToExportOrderToPDF = await _client.HasPermissionAsync(User, "CanExportOrderToPDF");
+
+            // Q: What is the flow when...
+            // a) You don't use the Authorize[] attribute
+            // b) You do use the Authorize[] attribute
+            //var isUserAllowed = await this._authz.AuthorizeAsync(User, "CanExportOrderToPDF");
+            if (!isUserAllowed.Succeeded)
+            {
+                return Forbid();
+            }
 
             return View("success");
         }

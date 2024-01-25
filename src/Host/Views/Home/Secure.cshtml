@@ -58,32 +58,73 @@
 
 <hr />
 
-<h2><u>All Permissions list</u> for the iVal Application</h2>
+<h1>== All possible Permissions == for an Order-based Application</h1>
 
-<ul>
+<p>&nbsp;</p>
+<h4>"Manager" Operations</h4>
+<ol>
     <li>
         <p>
-            <a asp-action="Staff">Staff permissions (View Team Orders and Export to PDF)</a>
+            <a asp-controller="Orders" asp-action="Create">Create Orders</a>
         </p>
     </li>
     <li>
         <p>
-            <a asp-action="DeleteOrders">Delete Team Orders</a>
+            <a asp-controller="Orders" asp-action="Read">View Orders</a>
         </p>
     </li>
     <li>
         <p>
-            <a asp-action="CanDeleteMyOwnOrders">Delete My own Order</a>
+            <a asp-controller="Orders" asp-action="Modify">Modify Orders</a>
         </p>
     </li>
+</ol>
+
+<p>&nbsp;</p>
+<h4>"User" Operations</h4>
+<ol>
     <li>
         <p>
-            <a asp-action="CanViewOrders">View Orders</a>
+            <a asp-controller="Orders" asp-action="Read">View Orders</a>
         </p>
     </li>
+</ol>
+
+<p>&nbsp;</p>
+<h4>"Admin" Operations</h4>
+<ol>
     <li>
         <p>
-            <a asp-action="CanExportOrderToPDF">Export Order To PDF</a>
+            <a asp-controller="Orders" asp-action="Delete">Delete Orders</a>
         </p>
     </li>
-</ul>
+</ol>
+
+
+@*<ul>
+        <li>
+            <p>
+                <a asp-action="Staff">Staff permissions (View Team Orders and Export to PDF)</a>
+            </p>
+        </li>
+        <li>
+            <p>
+                <a asp-action="DeleteOrders">Delete Team Orders</a>
+            </p>
+        </li>
+        <li>
+            <p>
+                <a asp-action="CanDeleteMyOwnOrders">Delete My own Order</a>
+            </p>
+        </li>
+        <li>
+            <p>
+                <a asp-action="CanViewOrders">View Orders</a>
+            </p>
+        </li>
+        <li>
+            <p>
+                <a asp-action="CanExportOrderToPDF">Export Order To PDF</a>
+            </p>
+        </li>
+</ul>*@

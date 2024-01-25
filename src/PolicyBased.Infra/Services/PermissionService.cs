@@ -1,9 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Data;
+using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 using PolicyBased.Contracts;
 using PolicyBased.Contracts.Services;
 using PolicyBased.Infra.Persistence.Context;
-using Microsoft.Data.SqlClient;
-using System.Data;
+
 namespace PolicyBased.Infra.Services
 {
     public class PermissionService : IPermissionService
@@ -50,6 +51,31 @@ namespace PolicyBased.Infra.Services
             var roles = polList.Select(a => a.Role).Distinct().AsEnumerable();
             var permissions = polList.Select(a => a.Permission).Distinct().AsEnumerable();
             return new PolicyResult() { Roles = roles, Permissions = permissions };
+        }
+
+        public async Task<LoggedInUser> GetLoggedInUserAsync(string userName)
+        {
+            LoggedInUser result;
+
+            var userEF = await this._dbContext.Users
+                .SingleOrDefaultAsync(x => x.UserName == userName);
+
+            result = userEF == null
+                ? new LoggedInUser
+                {
+                    Sub = "75",
+                    Name = userName
+                }
+                : new LoggedInUser
+                {
+                    Sub = userEF.UserId,
+                    Email = userEF.Email,
+                    Name = userEF.UserName,
+                    TenantId = userEF.TenantId
+                };
+
+
+            return result;
         }
 
         public class PolicyRow
