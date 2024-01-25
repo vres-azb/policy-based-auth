@@ -18,7 +18,7 @@ namespace PolicyBased.Infra.Services
 
         public async Task<PolicyResult> GetPermissions(string userId)
         {
-            string permSP = "EXEC [dbo].[GetUserPermissions] @UserId";
+            string permSP = "EXEC [pbac].[GetUserPermissions] @UserId";
             List<SqlParameter> parms = new()
             {
                  new SqlParameter { ParameterName = "@UserId", Value = userId },

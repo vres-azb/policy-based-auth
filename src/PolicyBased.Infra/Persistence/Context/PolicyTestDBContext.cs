@@ -29,6 +29,9 @@ namespace PolicyBased.Infra.Persistence.Context
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+
+            modelBuilder.HasDefaultSchema("pbac");
+
             modelBuilder.Entity<AppPolicy>(entity =>
             {
                 entity.HasOne(d => d.Permission)
