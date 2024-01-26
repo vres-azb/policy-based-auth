@@ -11,7 +11,7 @@
 <FluentBreadcrumb>
     <FluentBreadcrumbItem Href="#">
         <h5>
-            Policies
+            Policy Management Workspace
         </h5>
     </FluentBreadcrumbItem>
 </FluentBreadcrumb>
@@ -31,16 +31,16 @@ else
 {
     <FluentStack Orientation="Orientation.Horizontal" Style="width:100%">
 
-        <FluentStack Orientation="Orientation.Vertical" HorizontalAlignment="HorizontalAlignment.End" Style="width:70%">
+        <FluentStack Orientation="Orientation.Vertical" HorizontalAlignment="HorizontalAlignment.End" Style="width:90%">
 
             <FluentButton IconStart="@(new Icons.Regular.Size24.Add())" Appearance="Appearance.Accent" OnClick="(()=>ToggleNewPolicy(isCancel:false))">New Policy</FluentButton>
 
-            <FluentDataGrid Items="@policyList.AsQueryable()" ItemKey="(a=>a.Id)" ResizableColumns="false" style="width:100%" GridTemplateColumns="0.2fr 1fr">
+            <FluentDataGrid Items="@policyList.AsQueryable()" ItemKey="(a=>a.Id)" ResizableColumns="false" style="width:100%" GridTemplateColumns="0.3fr 1fr">
                 <EmptyContent>No Applications</EmptyContent>
                 <ChildContent>
-                    <PropertyColumn Align="Align.Start" Property="@(a => a.Name)" Sortable="true" />
+                    <PropertyColumn Align="Align.Start" Property="@(a => a.Name)" Title="Application Name" Sortable="true" />
                     <TemplateColumn Title="Policy" Context="policyContext" Align="Align.Start">
-                        <FluentDataGrid Items="@policyContext.Policies.AsQueryable()" GenerateHeader="GenerateHeaderOption.None" GridTemplateColumns="0.2fr 0.5fr  1fr">
+                        <FluentDataGrid Items="@policyContext.Policies.AsQueryable()" GenerateHeader="GenerateHeaderOption.None" GridTemplateColumns="0.2fr 0.6fr  1fr">
                             <EmptyContent>No policies</EmptyContent>
                             <ChildContent>
                                 <TemplateColumn Title="Actions" Context="pContext">
