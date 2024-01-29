@@ -62,7 +62,7 @@
 
     @if (showDetailPanel)
     {
-        @foreach (var r in allRoles.Where(a => a.RoleId == selRole.RoleId))
+        @foreach (var r in allRoles.Where(a => a.RoleId == selRole?.RoleId))
         {
             <FluentStack Orientation="Orientation.Vertical">
                 <FluentLabel Typo="Typography.PaneHeader" Weight="FontWeight.Bold">
@@ -231,28 +231,30 @@
 
     public async Task DeleteRole(int roleId)
     {
-        var dialog = await dialogService.ShowConfirmationAsync($"Do you want to delete the role {roleId}?", "Yup", "Nope", "Delete Role");
+        var delRole = allRoles.FirstOrDefault(a => a.RoleId == roleId);
+        var dialog = await dialogService.ShowConfirmationAsync($"Do you want to delete the role {delRole?.Name}?", "Yup", "Nope", "Delete Role");
         var result = await dialog.Result;
         var canceled = result.Cancelled;
-
+        var roleInd = allRoles.FindIndex(a => a.RoleId == roleId);
         if (!canceled)
         {
             var isDeleted = await UserRepo.DeleteRole(roleId);
             if (isDeleted)
             {
-                allRoles.RemoveAt(allRoles.FindIndex(a => a.RoleId == roleId));
-                toastService.ShowSuccess($"Role {roleId} is deleted", 5000);
+                allRoles.RemoveAt(roleInd);
+                toastService.ShowSuccess($"Role {delRole?.Name} is deleted", 5000);
             }
             else
             {
-                toastService.ShowError($"Error on deleting the role {roleId}", 5000);
+                toastService.ShowError($"Error on deleting the role delRole?.Name", 5000);
             }
         }
     }
 
     public async Task DeletePermission(int permId)
     {
-        var dialog = await dialogService.ShowConfirmationAsync($"Do you want to delete the permission {permId}?", "Yup", "Nope", "Delete Permission");
+        var delPerm = allRoles?.FirstOrDefault()?.Permissions.FirstOrDefault(a => a.Id == permId);
+        var dialog = await dialogService.ShowConfirmationAsync($"Do you want to delete the permission {delPerm?.Name}?", "Yup", "Nope", "Delete Permission");
         var result = await dialog.Result;
         var canceled = result.Cancelled;
 
@@ -261,13 +263,14 @@
             var isDeleted = await UserRepo.DeletePermission(permId);
             if (isDeleted)
             {
-                selRole.Permissions.RemoveAt(selRole.Permissions.FindIndex(a => a.Id == permId));
-                toastService.ShowSuccess($"Permission {permId} is deleted", 5000);
+                // selRole.Permissions.RemoveAt(selRole.Permissions.FindIndex(a => a.Id == permId));
+                toastService.ShowSuccess($"Permission {delPerm?.Name} is deleted", 5000);
                 //permList = selRole.Permissions.AsQueryable();
+                allRoles.ForEach(r => r.Permissions.RemoveAt(r.Permissions.FindIndex(a => a.Id == permId)));
             }
             else
             {
-                toastService.ShowError($"Error on deleting the permission {permId}", 5000);
+                toastService.ShowError($"Error on deleting the permission {delPerm?.Name}", 5000);
             }
         }
     }
