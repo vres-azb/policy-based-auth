@@ -24,7 +24,7 @@
     </FluentBreadcrumbItem>
 </FluentBreadcrumb>
 
-<FluentDivider Role="DividerRole.Separator" Orientation="Orientation.Horizontal" Style="width: 100%; padding-bottom:5px;"></FluentDivider>
+<FluentDivider Role="DividerRole.Separator" Orientation="Orientation.Horizontal" Style="width: 100%; padding-bottom:15px;"></FluentDivider>
 <FluentStack Orientation="Orientation.Horizontal" HorizontalAlignment="HorizontalAlignment.Center">
     <FluentButton Appearance="Appearance.Accent" OnClick="@(()=> SaveAsync())" Title="Save" Value="Save Policy" IconStart="@(new Icons.Regular.Size24.Save())">
         Save Policy
@@ -33,17 +33,20 @@
         Cancel
     </FluentAnchor>
 </FluentStack>
-<FluentStack Orientation="Orientation.Horizontal">
+<FluentStack Orientation="Orientation.Horizontal" Style="padding-top:15px;">
 
     <FluentStack Orientation="Orientation.Vertical" Style="width:60%;" HorizontalAlignment="HorizontalAlignment.Left">
-        <FluentLabel Typo="Typography.PaneHeader"> Roles </FluentLabel>
+
+        <FluentLabel Typo="Typography.PaneHeader" Weight="FontWeight.Bold">
+            <FluentIcon Value="@(new Icons.Regular.Size24.GroupList())"></FluentIcon> Roles
+        </FluentLabel>
         <FluentStack Orientation="Orientation.Horizontal">
-            <FluentTextField Placeholder="Role Name" @bind-Value="newRoleName" Size="45"></FluentTextField>
-            <FluentButton IconStart="@(new Icons.Regular.Size24.Add())" Appearance="Appearance.Accent" Disabled="string.IsNullOrEmpty(newRoleName)" OnClick="@(()=> AddNewRole())">Add</FluentButton>
+            <FluentTextField Placeholder="Role Name" @bind-Value="newRoleName" tabindex="101" Size="41"></FluentTextField>
+            <FluentButton IconStart="@(new Icons.Regular.Size24.Add())" tabindex="102" Appearance="Appearance.Accent" Disabled="string.IsNullOrEmpty(newRoleName)" OnClick="@(()=> AddNewRole())">Add</FluentButton>
         </FluentStack>
         @if (isLoaded)
         {
-            <FluentDataGrid Id="dgRole" Items="allRoles.AsQueryable()" RowStyle="@rowStyle" RowClass="@rowClass" Style="width:500px;"
+            <FluentDataGrid Id="dgRole" Items="allRoles.AsQueryable()" RowStyle="@rowStyle" tabindex="103" RowClass="@rowClass" Style="width:450px;"
                             ItemKey="((a)=>a.RoleId)" TGridItem="PolicyDtos.Role">
                 <EmptyContent>No Roles</EmptyContent>
                 <ChildContent>
@@ -59,46 +62,56 @@
 
     @if (showDetailPanel)
     {
-        <FluentStack Orientation="Orientation.Vertical">
-            <FluentLabel Typo="Typography.PaneHeader"> Permissions </FluentLabel>
-            <FluentStack Orientation="Orientation.Horizontal">
-                <FluentTextField Placeholder="Permission Name" @bind-Value="newPermName" Size="40"></FluentTextField>
-                <FluentButton IconStart="@(new Icons.Regular.Size24.Add())" Appearance="Appearance.Accent" Disabled="string.IsNullOrEmpty(newPermName)" OnClick="@(()=> AddNewPerm())">Add</FluentButton>
-            </FluentStack>
-            <FluentDataGrid Items="permList" Style="width:500px;" ItemKey="(a)=>a.Id" GridTemplateColumns="0.1fr 1fr">
-                <EmptyContent>No policies</EmptyContent>
-                <ChildContent>
-                    <TemplateColumn>
-                        <FluentCheckbox @bind-Value="context.IsSelected"></FluentCheckbox>
-                    </TemplateColumn>
-                    <PropertyColumn Align="Align.Start" Property="@(a => a.Name)" Sortable="false" />
-                    <TemplateColumn Title="Actions">
-                        <FluentButton IconStart="@(new Icons.Regular.Size24.Delete())" OnClick="@((p) => DeletePermission(context.Id))"></FluentButton>
-                    </TemplateColumn>
-                </ChildContent>
-            </FluentDataGrid>
+        @foreach (var r in allRoles.Where(a => a.RoleId == selRole.RoleId))
+        {
+            <FluentStack Orientation="Orientation.Vertical">
+                <FluentLabel Typo="Typography.PaneHeader" Weight="FontWeight.Bold">
+                    <FluentIcon Value="@(new Icons.Regular.Size24.Shield())"></FluentIcon> Permissions
+                </FluentLabel>
+                <FluentStack Orientation="Orientation.Horizontal">
+                    <FluentTextField Placeholder="Permission Name" @bind-Value="newPermName" Size="40" tabindex="201"></FluentTextField>
+                    <FluentButton IconStart="@(new Icons.Regular.Size24.Add())" Appearance="Appearance.Accent" tabindex="202" Disabled="string.IsNullOrEmpty(newPermName)" OnClick="@(()=> AddNewPerm())">Add</FluentButton>
+                </FluentStack>
+                <FluentDataGrid Items="r.Permissions.AsQueryable()" Style="width:450px;" ItemKey="(a)=>a.Id" GridTemplateColumns="0.1fr 1fr">
+                    <EmptyContent>No policies</EmptyContent>
+                    <ChildContent>
+                        <TemplateColumn>
+                            <FluentCheckbox @bind-Value="context.IsSelected"></FluentCheckbox>
+                        </TemplateColumn>
+                        <PropertyColumn Align="Align.Start" Property="@(a => a.Name)" Sortable="false" />
+                        <TemplateColumn Title="Actions">
+                            <FluentButton IconStart="@(new Icons.Regular.Size24.Delete())" OnClick="@((p) => DeletePermission(context.Id))"></FluentButton>
+                        </TemplateColumn>
+                    </ChildContent>
+                </FluentDataGrid>
 
-            <FluentLabel Typo="Typography.PaneHeader"> Users </FluentLabel>
-            <FluentDataGrid Items="roleUsers" Style="width:500px;" GridTemplateColumns="0.1fr 0.4fr 0.4fr">
-                <EmptyContent>No Users</EmptyContent>
-                <ChildContent>
-                    <TemplateColumn Style="width:50px;">
-                        <FluentCheckbox @bind-Value="context.IsSelected"></FluentCheckbox>
-                    </TemplateColumn>
-                    <PropertyColumn Align="Align.Start" Property="@(a => a.Email)" Style="width:250px;" Sortable="false" />
-                    <PropertyColumn Align="Align.Start" Property="@(a => a.UserName)" Style="width:250px;" Sortable="false" />
-                </ChildContent>
-            </FluentDataGrid>
-        </FluentStack>
+                <FluentLabel Typo="Typography.PaneHeader" Weight="FontWeight.Bold">
+                    <FluentIcon Value="@(new Icons.Regular.Size24.People())"></FluentIcon> Users
+                </FluentLabel>
+                <FluentDataGrid Items="r.Subjects.AsQueryable()" Style="width:450px;" GridTemplateColumns="0.1fr 0.4fr 0.4fr">
+                    <EmptyContent>No Users</EmptyContent>
+                    <ChildContent>
+                        <TemplateColumn Style="width:50px;">
+                            <FluentCheckbox @bind-Value="context.IsSelected"></FluentCheckbox>
+                        </TemplateColumn>
+                        <PropertyColumn Align="Align.Start" Property="@(a => a.Email)" Style="width:250px;" Sortable="false" />
+                        <PropertyColumn Align="Align.Start" Property="@(a => a.UserName)" Style="width:250px;" Sortable="false" />
+                    </ChildContent>
+                </FluentDataGrid>
+            </FluentStack>
+        }
     }
 </FluentStack>
+
 @code {
     PolicyDtos.Policy dataPolicy = new PolicyDtos.Policy();
     bool isLoaded = false;
     IQueryable<PolicyDtos.Subject>? roleUsers = null;
-    IQueryable<PolicyDtos.Permission> permList = null;
+    List<PolicyDtos.Permission> rolePerms = new();
+
+    //IQueryable<PolicyDtos.Permission> permList = null;
     bool showDetailPanel = false;
-    List<PolicyDtos.Role> allRoles = null;
+    List<PolicyDtos.Role> allRoles = new();
     PolicyDtos.Role? selRole;
     string? newRoleName;
     string? newPermName;
@@ -110,34 +123,37 @@
     {
         dataPolicy = await UserRepo.GetPolicy(int.Parse(PolicyId));
         allRoles = dataPolicy.Roles;
+        rolePerms = allRoles.FirstOrDefault()?.Permissions ?? new();
         isLoaded = true;
     }
 
     Func<PolicyDtos.Role, string?> rowClass = x => (x?.Name != "") ? "grid-row" : null;
     Func<PolicyDtos.Role, string?> rowStyle = x => x.IsSelected ? "background-color: #cce;" : null;
 
-    protected void HandleRowFocus(FluentDataGridRow<PolicyDtos.Role> e)
-    {
-        if (e.RowType != DataGridRowType.Header)
-        {
-            // clear the prev selected row
-            allRoles.ForEach(r => r.IsSelected = false);
-            showDetailPanel = true;
-            selRole = e.Item;
-            selRole!.IsSelected = true;
-            roleUsers = selRole.Subjects.AsQueryable();
-            permList = selRole.Permissions.AsQueryable();
-        }
-    }
+    // protected void HandleRowFocus(FluentDataGridRow<PolicyDtos.Role> e)
+    // {
+    //     if (e.RowType != DataGridRowType.Header)
+    //     {
+    //         // clear the prev selected row
+    //         allRoles.ForEach(r => r.IsSelected = false);
+    //         showDetailPanel = true;
+    //         selRole = e.Item;
+    //         selRole!.IsSelected = true;
+    //         roleUsers = selRole.Subjects.AsQueryable();
+    //        // permList = selRole.Permissions.AsQueryable();
+    //     }
+    // }
 
     private void ViewRole(PolicyDtos.Role curRole)
     {
-        selRole = curRole;
+        selRole = allRoles.FirstOrDefault(a => a.RoleId == curRole.RoleId);
         allRoles.ForEach(r => r.IsSelected = false);
         showDetailPanel = true;
         selRole!.IsSelected = true;
         roleUsers = selRole.Subjects.AsQueryable();
-        permList = selRole.Permissions.AsQueryable();
+        rolePerms = selRole.Permissions.ToList();
+        StateHasChanged();
+        //permList = selRole.Permissions.AsQueryable();
     }
 
     private async Task SaveAsync()
@@ -153,35 +169,62 @@
 
         // set the intial perms to the new role by taking any existing role
         var firstRole = allRoles.FirstOrDefault();
-        List<PolicyDtos.Permission> defPerms = new List<PolicyDtos.Permission>();
         List<PolicyDtos.Subject> defUsers = new();
         defUsers = await UserRepo.GetAllUsers();
+        List<PolicyDtos.Permission> defPerms = new List<PolicyDtos.Permission>();
 
-        if (firstRole != null)
-        {
-            defPerms = firstRole.Permissions;
-            defPerms.ForEach(a => a.IsSelected = false);
-        }
-
-        allRoles.Add(new PolicyDtos.Role()
+        var newRole = new PolicyDtos.Role()
             {
                 RoleId = roleId,
                 Name = newRoleName,
                 PolicyId = policyId,
-                Permissions = defPerms,
                 Subjects = defUsers
-            });
+            };
 
+        if (firstRole == null)
+        {
+        }
+        else
+        {
+            foreach (var p in firstRole.Permissions)
+            {
+                defPerms.Add(new PolicyDtos.Permission() { Name = p.Name, Id = p.Id });
+            }
+            newRole.Permissions = defPerms;
+        }
+        allRoles.Add(newRole);
         newRoleName = null;
-        StateHasChanged();
+        // StateHasChanged();
     }
 
     private async Task AddNewPerm()
     {
         var permId = await UserRepo.AddNewPermission(int.Parse(PolicyId), newPermName);
-        var newPerm = new PolicyDtos.Permission() { Id = permId, Name = newPermName };
-        permList = selRole.Permissions.AsQueryable();
-        allRoles.ForEach(r => r.Permissions.Add(newPerm));
+
+        // if (!rolePerms.Any(a => a.Id == newPerm.Id))
+        // {
+        //     rolePerms.Add(newPerm);
+        // }
+        // var permList1 = new List<Permission>();
+        foreach (var item in allRoles)
+        {
+            var roleP = item.Permissions;
+            var newPerm = new PolicyDtos.Permission() { Id = permId, Name = newPermName, IsSelected = false };
+            // roleP.Add(newPerm);
+            if (!roleP.Any(a => a.Id == newPerm.Id))
+            {
+                if (item.RoleId != selRole.RoleId)
+                {
+                    // newPerm.IsSelected = false;
+                }
+                roleP.Add(newPerm);
+            }
+        }
+        // // allRoles.ForEach(r => r.Permissions.Add(newPerm));
+        // if (!selRole.Permissions.Any(a => a.Id == newPerm.Id))
+        // {
+        //     selRole.Permissions.Add(newPerm);
+        // }
         newPermName = null;
         StateHasChanged();
     }
@@ -220,7 +263,7 @@
             {
                 selRole.Permissions.RemoveAt(selRole.Permissions.FindIndex(a => a.Id == permId));
                 toastService.ShowSuccess($"Permission {permId} is deleted", 5000);
-                permList = selRole.Permissions.AsQueryable();
+                //permList = selRole.Permissions.AsQueryable();
             }
             else
             {

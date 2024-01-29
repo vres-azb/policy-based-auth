@@ -1,15 +1,19 @@
-﻿@page "/Roles/Index"
+﻿@page "/Users"
+@using PolicyBased.Contracts
+@using PolicyBased.Contracts.Services
+@using PolicyBased.Infra.Dtos
 @using PolicyBased.Infra.Models
 @using PolicyBased.Infra.Persistence.Repositories
 @using PolicyDtos = PolicyBased.Infra.Dtos;
 
 @inject IUserRepo UserRepo;
+@inject IPermissionService permService;
 <PageTitle>Policies</PageTitle>
 
 <FluentBreadcrumb>
     <FluentBreadcrumbItem Href="#">
         <h5>
-            Policies
+            Users
         </h5>
     </FluentBreadcrumbItem>
 </FluentBreadcrumb>
@@ -17,43 +21,87 @@
 
 <FluentStack Orientation="Orientation.Horizontal">
 
-    <FluentStack Orientation="Orientation.Vertical" Style="width:50%;" HorizontalAlignment="HorizontalAlignment.Left">
-        <FluentDataGrid Items="@policyList" ItemKey="(a=>a.Id)" Style="width:850px;" ResizableColumns="false">
-            <EmptyContent>No policies</EmptyContent>
+    <FluentStack Orientation="Orientation.Vertical" Style="width:60%" Width="60%" HorizontalAlignment="HorizontalAlignment.Left">
+        <FluentDataGrid Items="@userList" ItemKey="(a=>a.Id)" Style="width:550px;" GridTemplateColumns="1fr 1fr 0.5fr" ResizableColumns="false">
+            <EmptyContent>No Users</EmptyContent>
             <ChildContent>
-                <TemplateColumn Title="Actions">
-                    <FluentAnchor Href="/Policies/Edit" IconStart="@(new Icons.Regular.Size24.Edit())">
-                    </FluentAnchor>
+                <PropertyColumn Align="Align.Start" Property="@(a => a.UserName)" Sortable="true" />
+                <PropertyColumn Align="Align.Start" Property="@(a => a.Email)" Sortable="true" />
+
+                <TemplateColumn Title="View">
+                    <FluentButton IconStart="@(new Icons.Regular.Size24.PersonInfo())" OnClick="@(() => ViewUser(context.UserId, context.UserName))"></FluentButton>
                 </TemplateColumn>
-                <PropertyColumn Align="Align.Start" Property="@(a => a.Name)" Style="width:80px;" Sortable="true" />
-                <TemplateColumn Style="width:500px;" Title="Policy" Context="policyContext" Align="Align.Start">
-                    <FluentDataGrid Items="@policyContext.Policies.AsQueryable()" ResizableColumns="false" GenerateHeader="GenerateHeaderOption.None">
-                        <PropertyColumn Property="@(p => p.Name)" Sortable="true" Style="width:100px;" />
-                        <TemplateColumn Context="permContext">
-                            @{
-                                var permRoles = permContext.Roles.AsQueryable();
-                            }
-                            <FluentDataGrid Items="@permRoles" GenerateHeader="GenerateHeaderOption.None">
-                                <PropertyColumn Property="@(p => p.Name)" Title="Role" Sortable="true" Style="width:120px;" />
-                                <TemplateColumn Title="Actions" Style="width:50px;">
-                                    <FluentButton IconStart="@(new Icons.Regular.Size24.Edit())"></FluentButton>
-                                </TemplateColumn>
-                                </FluentDataGrid>
-                            </TemplateColumn>
-                        </FluentDataGrid>
-                    </TemplateColumn>
-                </ChildContent>
-            </FluentDataGrid>
+            </ChildContent>
+        </FluentDataGrid>
     </FluentStack>
 
+    @if (showUserInfo)
+    {
+        <FluentStack Orientation="Orientation.Vertical">
+            <FluentLabel Typo="Typography.PaneHeader">
+                @curUserName Policy Results:
+            </FluentLabel>
+            <FluentDivider Style="width:50%" Orientation="Orientation.Horizontal"></FluentDivider>
+            @if (policyRes != null)
+            {
+                @if (policyRes.Policies.Any())
+                {
+                    <h3 style="color:coral;">Policies</h3>
+                    <ul>
+                        @foreach (var policy in policyRes.Policies)
+                        {
+                            <li>@policy</li>
+                        }
+                    </ul>
+                }
 
-    </FluentStack>
-    @code {
-    IQueryable<PolicyDtos.Application>? policyList = null;
-    int currentAppId;
+                @if (policyRes.Roles.Any())
+                {
+                    <h3 style="color:coral;">Roles</h3>
+                    <ul>
+                        @foreach (var role in policyRes.Roles)
+                        {
+                            <li>@role</li>
+                        }
+                    </ul>
+                }
+
+                @if (policyRes.Permissions.Any())
+                {
+                    <h3 style="color:coral;">Permissions</h3>
+                    <ul>
+                        @foreach (var perm in policyRes.Permissions)
+                        {
+                            <li>@perm</li>
+                        }
+                    </ul>
+                }
+            }
+            else
+            {
+                <FluentLabel>No info</FluentLabel>
+            }
+
+
+        </FluentStack>
+    }
+
+</FluentStack>
+@code {
+    IQueryable<PolicyDtos.Subject>? userList = null;
+    bool showUserInfo = false;
+    PolicyResult? policyRes = null;
+    string? curUserName;
     protected override async Task OnInitializedAsync()
     {
-        var allPolicies = await UserRepo.GetPolicies();
-        policyList = allPolicies.AsQueryable();
+        var allUsers = await UserRepo.GetAllUsers();
+        userList = allUsers.AsQueryable();
+    }
+
+    async Task ViewUser(string userId, string userName)
+    {
+        policyRes = await permService.GetPermissions(userId);
+        curUserName = userName;
+        showUserInfo = true;
     }
 }

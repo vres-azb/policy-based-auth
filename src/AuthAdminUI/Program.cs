@@ -8,8 +8,10 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Fast.Components.FluentUI;
+using PolicyBased.Contracts.Services;
 using PolicyBased.Infra.Persistence.Context;
 using PolicyBased.Infra.Persistence.Repositories;
+using PolicyBased.Infra.Services;
 
 namespace AuthAdminUI
 {
@@ -41,6 +43,8 @@ namespace AuthAdminUI
             });
 
             services.AddScoped<IUserRepo,UserRepo>();
+            services.AddScoped<IPermissionService, PermissionService>();
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
