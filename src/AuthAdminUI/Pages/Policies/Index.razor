@@ -31,7 +31,7 @@ else
 {
     <FluentStack Orientation="Orientation.Horizontal" Style="width:100%">
 
-        <FluentStack Orientation="Orientation.Vertical" HorizontalAlignment="HorizontalAlignment.End" Style="width:90%">
+        <FluentStack Orientation="Orientation.Vertical" HorizontalAlignment="HorizontalAlignment.End" Style="width:75%">
 
             <FluentButton IconStart="@(new Icons.Regular.Size24.Add())" Appearance="Appearance.Accent" OnClick="(()=>ToggleNewPolicy(isCancel:false))">New Policy</FluentButton>
 
@@ -40,7 +40,7 @@ else
                 <ChildContent>
                     <PropertyColumn Align="Align.Start" Property="@(a => a.Name)" Title="Application Name" Sortable="true" />
                     <TemplateColumn Title="Policy" Context="policyContext" Align="Align.Start">
-                        <FluentDataGrid Items="@policyContext.Policies.AsQueryable()" GenerateHeader="GenerateHeaderOption.None" GridTemplateColumns="0.2fr 0.6fr  1fr">
+                        <FluentDataGrid Items="@policyContext.Policies.AsQueryable()" GenerateHeader="GenerateHeaderOption.None" GridTemplateColumns="0.2fr 0.4fr 0.8fr">
                             <EmptyContent>No policies</EmptyContent>
                             <ChildContent>
                                 <TemplateColumn Title="Actions" Context="pContext">
@@ -57,7 +57,7 @@ else
                                     @{
                                         var roles = permContext.Roles.AsQueryable();
                                     }
-                                    <FluentDataGrid Items="@roles" GridTemplateColumns="1fr 1fr">
+                                    <FluentDataGrid Items="@roles" GridTemplateColumns="0.5fr 0.5fr">
                                         <EmptyContent>No Roles</EmptyContent>
                                         <ChildContent>
                                             <PropertyColumn Property="@(p => p.Name)" Title="Role" Sortable="false" />
@@ -67,24 +67,24 @@ else
                                                     MarkupString permsNames = (MarkupString)string.Join("<br/>", perms);
                                                 }
                                                 <FluentLabel>@permsNames</FluentLabel>
-                                            </TemplateColumn>
-                                        </ChildContent>
-                                    </FluentDataGrid>
-                                </TemplateColumn>
-                            </ChildContent>
-                        </FluentDataGrid>
-                    </TemplateColumn>
-                </ChildContent>
-            </FluentDataGrid>
-        </FluentStack>
+                                                </TemplateColumn>
+                                            </ChildContent>
+                                        </FluentDataGrid>
+                                    </TemplateColumn>
+                                </ChildContent>
+                            </FluentDataGrid>
+                        </TemplateColumn>
+                    </ChildContent>
+                </FluentDataGrid>
+            </FluentStack>
 
-        <FluentDivider Role="DividerRole.Separator" Orientation="Orientation.Vertical" Style="height: 500px;"></FluentDivider>
+            <FluentDivider Role="DividerRole.Separator" Orientation="Orientation.Vertical" Style="height: 500px;"></FluentDivider>
 
-        @if (showAddNew)
+            @if (showAddNew)
         {
-            <FluentStack Orientation="Orientation.Vertical" Style="width:20%">
+            <FluentStack Orientation="Orientation.Vertical" Style="width:20%;">
+                <FluentTextField Placeholder="Policy Name" Size="25" @bind-Value="newPolicyName"></FluentTextField>
                 <FluentStack Orientation="Orientation.Horizontal">
-                    <FluentTextField Placeholder="Policy Name" @bind-Value="newPolicyName"></FluentTextField>
                     <FluentButton OnClick="(()=>AddNewPolicy())" Disabled="string.IsNullOrEmpty(newPolicyName)" Appearance="Appearance.Accent">Save</FluentButton>
                     <FluentButton OnClick="(()=>ToggleNewPolicy(isCancel:true))">Cancel</FluentButton>
                 </FluentStack>
@@ -121,6 +121,7 @@ else
         }
         else
         {
+            newPolicyName = string.Empty;
             showAddNew = false;
         }
     }

@@ -37,7 +37,7 @@
 
     <FluentStack Orientation="Orientation.Vertical" Style="width:60%;" HorizontalAlignment="HorizontalAlignment.Left">
 
-        <FluentLabel Typo="Typography.PaneHeader" Weight="FontWeight.Bold">
+        <FluentLabel Typo="Typography.Subject">
             <FluentIcon Value="@(new Icons.Regular.Size24.GroupList())"></FluentIcon> Roles
         </FluentLabel>
         <FluentStack Orientation="Orientation.Horizontal">
@@ -65,7 +65,7 @@
         @foreach (var r in allRoles.Where(a => a.RoleId == selRole?.RoleId))
         {
             <FluentStack Orientation="Orientation.Vertical">
-                <FluentLabel Typo="Typography.PaneHeader" Weight="FontWeight.Bold">
+                <FluentLabel Typo="Typography.Subject">
                     <FluentIcon Value="@(new Icons.Regular.Size24.Shield())"></FluentIcon> Permissions
                 </FluentLabel>
                 <FluentStack Orientation="Orientation.Horizontal">
@@ -85,7 +85,7 @@
                     </ChildContent>
                 </FluentDataGrid>
 
-                <FluentLabel Typo="Typography.PaneHeader" Weight="FontWeight.Bold">
+                <FluentLabel Typo="Typography.Subject">
                     <FluentIcon Value="@(new Icons.Regular.Size24.People())"></FluentIcon> Users
                 </FluentLabel>
                 <FluentDataGrid Items="r.Subjects.AsQueryable()" Style="width:450px;" GridTemplateColumns="0.1fr 0.4fr 0.4fr">
@@ -107,9 +107,7 @@
     PolicyDtos.Policy dataPolicy = new PolicyDtos.Policy();
     bool isLoaded = false;
     IQueryable<PolicyDtos.Subject>? roleUsers = null;
-    List<PolicyDtos.Permission> rolePerms = new();
 
-    //IQueryable<PolicyDtos.Permission> permList = null;
     bool showDetailPanel = false;
     List<PolicyDtos.Role> allRoles = new();
     PolicyDtos.Role? selRole;
@@ -123,7 +121,6 @@
     {
         dataPolicy = await UserRepo.GetPolicy(int.Parse(PolicyId));
         allRoles = dataPolicy.Roles;
-        rolePerms = allRoles.FirstOrDefault()?.Permissions ?? new();
         isLoaded = true;
     }
 
@@ -151,9 +148,7 @@
         showDetailPanel = true;
         selRole!.IsSelected = true;
         roleUsers = selRole.Subjects.AsQueryable();
-        rolePerms = selRole.Permissions.ToList();
         StateHasChanged();
-        //permList = selRole.Permissions.AsQueryable();
     }
 
     private async Task SaveAsync()
@@ -201,30 +196,15 @@
     {
         var permId = await UserRepo.AddNewPermission(int.Parse(PolicyId), newPermName);
 
-        // if (!rolePerms.Any(a => a.Id == newPerm.Id))
-        // {
-        //     rolePerms.Add(newPerm);
-        // }
-        // var permList1 = new List<Permission>();
         foreach (var item in allRoles)
         {
             var roleP = item.Permissions;
             var newPerm = new PolicyDtos.Permission() { Id = permId, Name = newPermName, IsSelected = false };
-            // roleP.Add(newPerm);
             if (!roleP.Any(a => a.Id == newPerm.Id))
             {
-                if (item.RoleId != selRole.RoleId)
-                {
-                    // newPerm.IsSelected = false;
-                }
                 roleP.Add(newPerm);
             }
         }
-        // // allRoles.ForEach(r => r.Permissions.Add(newPerm));
-        // if (!selRole.Permissions.Any(a => a.Id == newPerm.Id))
-        // {
-        //     selRole.Permissions.Add(newPerm);
-        // }
         newPermName = null;
         StateHasChanged();
     }
@@ -263,7 +243,6 @@
             var isDeleted = await UserRepo.DeletePermission(permId);
             if (isDeleted)
             {
-                // selRole.Permissions.RemoveAt(selRole.Permissions.FindIndex(a => a.Id == permId));
                 toastService.ShowSuccess($"Permission {delPerm?.Name} is deleted", 5000);
                 //permList = selRole.Permissions.AsQueryable();
                 allRoles.ForEach(r => r.Permissions.RemoveAt(r.Permissions.FindIndex(a => a.Id == permId)));
