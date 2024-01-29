@@ -50,7 +50,7 @@ else
                                     }
                                     <FluentAnchor Href="@policyEditUrl" Appearance="Appearance.Hypertext" IconStart="@(new Icons.Regular.Size24.Edit())">
                                     </FluentAnchor>
-                                    <FluentButton OnClick="(()=>DeletePolicy(pContext.Id))" IconStart="@(new Icons.Regular.Size24.Delete())"></FluentButton>
+                                    <FluentButton OnClick="(()=>DeletePolicy(pContext.Id, pContext.Name))" IconStart="@(new Icons.Regular.Size24.Delete())"></FluentButton>
                                 </TemplateColumn>
                                 <PropertyColumn Property="@(p => p.Name)" Sortable="false" />
                                 <TemplateColumn Context="permContext">
@@ -134,9 +134,9 @@ else
         //StateHasChanged();
     }
 
-    async Task DeletePolicy(int policyId)
+    async Task DeletePolicy(int policyId, string policyName)
     {
-        var dialog = await dialogService.ShowConfirmationAsync($"Do you want to delete the policy {policyId}?", "Yup", "Nope", "Delete Policy");
+        var dialog = await dialogService.ShowConfirmationAsync($"Do you want to delete the policy {policyName}?", "Yup", "Nope", "Delete Policy");
         var result = await dialog.Result;
         var canceled = result.Cancelled;
 
@@ -145,14 +145,14 @@ else
             var isDeleted = await UserRepo.DeletePolicy(policyId); ;
             if (isDeleted)
             {
-                toastService.ShowSuccess($"Policy {policyId} deleted", 5000);
+                toastService.ShowSuccess($"Policy {policyName} deleted", 5000);
                 var allPolicies = await UserRepo.GetPolicies();
                 policyList = allPolicies;
                 StateHasChanged();
             }
             else
             {
-                toastService.ShowError($"Error on deleting the policy {policyId}", 5000);
+                toastService.ShowError($"Error on deleting the policy {policyName}", 5000);
             }
         }
 
