@@ -16,35 +16,35 @@
    "T4TemplatePath": null,
    "Tables": [
       {
-         "Name": "[poc_da].[Applications]",
+         "Name": "[pbac].[Applications]",
          "ObjectType": 0
       },
       {
-         "Name": "[poc_da].[AppPolicies]",
+         "Name": "[pbac].[AppPolicies]",
          "ObjectType": 0
       },
       {
-         "Name": "[poc_da].[Permissions]",
+         "Name": "[pbac].[Permissions]",
          "ObjectType": 0
       },
       {
-         "Name": "[poc_da].[Policies]",
+         "Name": "[pbac].[Policies]",
          "ObjectType": 0
       },
       {
-         "Name": "[poc_da].[Roles]",
+         "Name": "[pbac].[Roles]",
          "ObjectType": 0
       },
       {
-         "Name": "[poc_da].[UserRoles]",
+         "Name": "[pbac].[UserRoles]",
          "ObjectType": 0
       },
       {
-         "Name": "[poc_da].[Users]",
+         "Name": "[pbac].[Users]",
          "ObjectType": 0
       },
       {
-         "Name": "[poc_da].[GetUserPermissions]",
+         "Name": "[pbac].[GetUserPermissions]",
          "ObjectType": 1
       }
    ],

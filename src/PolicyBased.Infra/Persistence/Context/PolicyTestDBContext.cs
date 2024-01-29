@@ -29,9 +29,12 @@ namespace PolicyBased.Infra.Persistence.Context
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+
+            modelBuilder.HasDefaultSchema("pbac");
+
             modelBuilder.Entity<AppPolicy>(entity =>
             {
-                entity.ToTable("AppPolicies", "poc_da");
+                entity.ToTable("AppPolicies", "pbac");
 
                 entity.HasOne(d => d.Permission)
                     .WithMany(p => p.AppPolicies)
@@ -54,7 +57,7 @@ namespace PolicyBased.Infra.Persistence.Context
 
             modelBuilder.Entity<Application>(entity =>
             {
-                entity.ToTable("Applications", "poc_da");
+                entity.ToTable("Applications", "pbac");
 
                 entity.Property(e => e.Name)
                     .IsRequired()
@@ -64,7 +67,7 @@ namespace PolicyBased.Infra.Persistence.Context
 
             modelBuilder.Entity<Permission>(entity =>
             {
-                entity.ToTable("Permissions", "poc_da");
+                entity.ToTable("Permissions", "pbac");
 
                 entity.Property(e => e.Name)
                     .IsRequired()
@@ -80,7 +83,7 @@ namespace PolicyBased.Infra.Persistence.Context
 
             modelBuilder.Entity<Policy>(entity =>
             {
-                entity.ToTable("Policies", "poc_da");
+                entity.ToTable("Policies", "pbac");
 
                 entity.Property(e => e.Name)
                     .IsRequired()
@@ -96,7 +99,7 @@ namespace PolicyBased.Infra.Persistence.Context
 
             modelBuilder.Entity<Role>(entity =>
             {
-                entity.ToTable("Roles", "poc_da");
+                entity.ToTable("Roles", "pbac");
 
                 entity.Property(e => e.RoleName)
                     .IsRequired()
@@ -112,7 +115,7 @@ namespace PolicyBased.Infra.Persistence.Context
 
             modelBuilder.Entity<User>(entity =>
             {
-                entity.ToTable("Users", "poc_da");
+                entity.ToTable("Users", "pbac");
 
                 entity.HasIndex(e => e.Id, "IX_Users_UserName")
                     .IsUnique();
@@ -134,7 +137,7 @@ namespace PolicyBased.Infra.Persistence.Context
 
             modelBuilder.Entity<UserRole>(entity =>
             {
-                entity.ToTable("UserRoles", "poc_da");
+                entity.ToTable("UserRoles", "pbac");
 
                 entity.HasOne(d => d.Role)
                     .WithMany(p => p.UserRoles)

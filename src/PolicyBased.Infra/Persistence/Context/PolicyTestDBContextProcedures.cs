@@ -67,7 +67,7 @@ namespace PolicyBased.Infra.Persistence.Context
                 },
                 parameterreturnValue,
             };
-            var _ = await _context.SqlQueryAsync<GetUserPermissionsResult>("EXEC @returnValue = [poc_da].[GetUserPermissions] @UserId", sqlParameters, cancellationToken);
+            var _ = await _context.SqlQueryAsync<GetUserPermissionsResult>("EXEC @returnValue = [pbac].[GetUserPermissions] @UserId", sqlParameters, cancellationToken);
 
             returnValue?.SetValue(parameterreturnValue.Value);
 
