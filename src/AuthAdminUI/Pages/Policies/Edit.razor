@@ -65,6 +65,9 @@
         @foreach (var r in allRoles.Where(a => a.RoleId == selRole?.RoleId))
         {
             <FluentStack Orientation="Orientation.Vertical">
+                <FluentStack Orientation="Orientation.Horizontal">
+                    <label> Role:</label> <FluentTextField Size=35 Placeholder="Role Name" @bind-Value="r.Name" />
+                </FluentStack>
                 <FluentLabel Typo="Typography.Subject">
                     <FluentIcon Value="@(new Icons.Regular.Size24.Shield())"></FluentIcon> Permissions
                 </FluentLabel>
@@ -94,8 +97,8 @@
                         <TemplateColumn Style="width:50px;">
                             <FluentCheckbox @bind-Value="context.IsSelected"></FluentCheckbox>
                         </TemplateColumn>
-                        <PropertyColumn Align="Align.Start" Property="@(a => a.Email)" Style="width:250px;" Sortable="false" />
                         <PropertyColumn Align="Align.Start" Property="@(a => a.UserName)" Style="width:250px;" Sortable="false" />
+                        <PropertyColumn Align="Align.Start" Property="@(a => a.Email)" Style="width:250px;" Sortable="false" />
                     </ChildContent>
                 </FluentDataGrid>
             </FluentStack>
@@ -153,8 +156,15 @@
 
     private async Task SaveAsync()
     {
-        await UserRepo.SavePolicy(dataPolicy);
-        navMgr.NavigateTo("/");
+        bool isSuccess = await UserRepo.SavePolicy(dataPolicy);
+        if (isSuccess)
+        {
+            navMgr.NavigateTo("/");
+        }
+        else
+        {
+            toastService.ShowError($"Error on saving the policy", 5000);
+        }
     }
 
     private async Task AddNewRole()
@@ -176,10 +186,7 @@
                 Subjects = defUsers
             };
 
-        if (firstRole == null)
-        {
-        }
-        else
+        if (firstRole?.Permissions.Any() == true)
         {
             foreach (var p in firstRole.Permissions)
             {
@@ -189,7 +196,6 @@
         }
         allRoles.Add(newRole);
         newRoleName = null;
-        // StateHasChanged();
     }
 
     private async Task AddNewPerm()

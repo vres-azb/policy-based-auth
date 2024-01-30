@@ -16,7 +16,7 @@ public class UserRepo : IUserRepo
 
     public async Task<List<PolicyDtos.Subject>> GetAllUsers()
     {
-        var allUsers = await _dbContext.Users.Include(u => u.UserRoles).ToListAsync();
+        var allUsers = await _dbContext.Users.Where(a => !a.IsDeleted).ToListAsync();
         return allUsers.Select(a => new PolicyDtos.Subject() { Id = a.Id, UserName = a.UserName, Email = a.Email, UserId = a.UserId.ToString() }).ToList();
     }
 
@@ -122,53 +122,80 @@ public class UserRepo : IUserRepo
         return p;
     }
 
-    public async Task SavePolicy(PolicyDtos.Policy policy)
+    public async Task<bool> SavePolicy(PolicyDtos.Policy policy)
     {
-        var appPolicies = await _dbContext.AppPolicies.Include(a => a.Policy)
-            .Include(a => a.Permission).Include(a => a.Role).Include(a => a.Role.UserRoles)
-            .Where(a => a.PolicyId == policy.Id && !a.IsDeleted).ToListAsync().ConfigureAwait(false);
-
-        var allRoles = await _dbContext.Roles.Where(a => a.PolicyId == policy.Id && !a.IsDeleted).ToListAsync().ConfigureAwait(false);
-        var allPerm = await _dbContext.Permissions.Where(a => a.PolicyId == policy.Id && !a.IsDeleted).ToListAsync().ConfigureAwait(false);
-        var allUsers = await _dbContext.Users.ToListAsync();
-        appPolicies.ForEach(p =>
+        using var trans = await _dbContext.Database.BeginTransactionAsync();
+        try
         {
-            p.IsDeleted = true;
-        });
+            var appPolicies = await _dbContext.AppPolicies.Include(a => a.Policy)
+                    .Include(a => a.Permission).Include(a => a.Role).Include(a => a.Role.UserRoles)
+                    .Where(a => a.PolicyId == policy.Id && !a.IsDeleted).ToListAsync().ConfigureAwait(false);
 
-        var roleUsers = _dbContext.UserRoles.ToList()
-                .Where(a => !a.IsDeleted == true && policy.Roles.Any(r => r.RoleId == a.RoleId)).ToList();
-        roleUsers.ForEach(p =>
-        {
-            p.IsDeleted = true;
-        });
-
-        await _dbContext.SaveChangesAsync();
-
-        var newPolcies = new List<AppPolicy>();
-        foreach (var role in policy.Roles)
-        {
-            // save user's roles
-            foreach (var user in role.Subjects.Where(a => a.IsSelected))
+            var allPerm = await _dbContext.Permissions.Where(a => a.PolicyId == policy.Id && !a.IsDeleted).ToListAsync().ConfigureAwait(false);
+            var allUsers = await _dbContext.Users.ToListAsync();
+            appPolicies.ForEach(p =>
             {
-                _dbContext.UserRoles.Add(new UserRole() { RoleId = role.RoleId, UserId = user.Id });
-            }
+                p.IsDeleted = true;
+            });
 
-            // save permissions
-            foreach (var permission in role.Permissions.Where(p => p.IsSelected).ToList())
+            var roleUsers = _dbContext.UserRoles.ToList()
+                    .Where(a => !a.IsDeleted == true && policy.Roles.Any(r => r.RoleId == a.RoleId)).ToList();
+            roleUsers.ForEach(p =>
             {
-                AppPolicy pol = new()
+                p.IsDeleted = true;
+            });
+
+            await _dbContext.SaveChangesAsync();
+
+            var newPolcies = new List<AppPolicy>();
+            var dbPerms = _dbContext.Permissions.Where(a => a.PolicyId == policy.Id && !a.IsDeleted).ToList();
+
+            foreach (var dbPermItem in dbPerms)
+            {
+                var permItem = policy.Permissions.FirstOrDefault(p => p.Id == dbPermItem.Id);
+                if (permItem != null && dbPermItem.Name != permItem.Name)
                 {
-                    PolicyId = policy.Id,
-                    RoleId = role.RoleId,
-                    PermissionId = permission.Id,
-                    IsDeleted = false
-                };
-                newPolcies.Add(pol);
+                    dbPermItem.Name = permItem.Name;
+                }
             }
+
+            foreach (var role in policy.Roles)
+            {
+                var dbRole = await _dbContext.Roles.FirstOrDefaultAsync(a => a.Id == role.RoleId);
+
+                if (dbRole != null && dbRole?.RoleName != role.Name)
+                {
+                    dbRole.RoleName = role.Name;
+                }
+
+                // save user's roles
+                foreach (var user in role.Subjects.Where(a => a.IsSelected))
+                {
+                    _dbContext.UserRoles.Add(new UserRole() { RoleId = role.RoleId, UserId = user.Id });
+                }
+
+                // save permissions
+                foreach (var permission in role.Permissions.Where(p => p.IsSelected).ToList())
+                {
+                    AppPolicy pol = new()
+                    {
+                        PolicyId = policy.Id,
+                        RoleId = role.RoleId,
+                        PermissionId = permission.Id,
+                        IsDeleted = false
+                    };
+                    newPolcies.Add(pol);
+                }
+            }
+            await _dbContext.AppPolicies.AddRangeAsync(newPolcies);
+            await _dbContext.SaveChangesAsync();
+            await trans.CommitAsync();
+            return true;
         }
-        await _dbContext.AppPolicies.AddRangeAsync(newPolcies);
-        await _dbContext.SaveChangesAsync();
+        catch (Exception ex)
+        {
+            return false;
+        }
     }
 
     public async Task<int> AddNewPolicy(string policyName)
@@ -242,6 +269,56 @@ public class UserRepo : IUserRepo
         return false;
     }
 
+    public async Task<bool> UpdateUser(PolicyDtos.Subject userInfo)
+    {
+        if (userInfo?.Id > 0)
+        {
+            var dbUser = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == userInfo.Id);
+            if (dbUser != null)
+            {
 
+                dbUser.UserName = userInfo.UserName;
+                dbUser.Email = userInfo.Email;
+                dbUser.UserId = userInfo.UserId;
+                await _dbContext.SaveChangesAsync();
+                return true;
+            }
+            return false;
+        }
+        return false;
+    }
+
+    public async Task<string> AddNewUser(PolicyDtos.Subject userInfo)
+    {
+        if (userInfo?.UserName != string.Empty)
+        {
+            User sub = new()
+            {
+                UserName = userInfo.UserName,
+                Email = userInfo.Email,
+                UserId = Guid.NewGuid().ToString(),
+            };
+            await _dbContext.AddAsync(sub);
+            await _dbContext.SaveChangesAsync();
+            return sub.UserId;
+        }
+        return string.Empty;
+    }
+
+    public async Task<bool> DeleteUser(int userId)
+    {
+        var curUser = await _dbContext.Users.Include(u => u.UserRoles).FirstOrDefaultAsync(a => a.Id == userId);
+        if (curUser != null)
+        {
+            foreach (var item in curUser.UserRoles)
+            {
+                item.IsDeleted = true;
+            }
+            curUser.IsDeleted = true;
+            await _dbContext.SaveChangesAsync();
+            return true;
+        }
+        return false;
+    }
 
 }

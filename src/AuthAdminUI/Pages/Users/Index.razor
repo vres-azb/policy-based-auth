@@ -5,6 +5,9 @@
 @using PolicyBased.Infra.Models
 @using PolicyBased.Infra.Persistence.Repositories
 @using PolicyDtos = PolicyBased.Infra.Dtos;
+@inject IToastService toastService;
+@inject IDialogService dialogService;
+
 
 @inject IUserRepo UserRepo;
 @inject IPermissionService permService;
@@ -18,35 +21,43 @@
     </FluentBreadcrumbItem>
 </FluentBreadcrumb>
 
+<FluentStack Orientation="Orientation.Horizontal" Style="width:100%;">
 
-<FluentStack Orientation="Orientation.Horizontal">
+    <FluentStack Orientation="Orientation.Vertical" VerticalAlignment=VerticalAlignment.Top HorizontalAlignment="HorizontalAlignment.Right" Style="width:50%">
+        <FluentButton IconStart="@(new Icons.Regular.Size24.Add())" Appearance="Appearance.Accent" OnClick="(()=>ToggleNewUser(isCancel:false))">New User</FluentButton>
+        <FluentStack Orientation="Orientation.Vertical" HorizontalAlignment="HorizontalAlignment.Right" Style="width:100%">
+            <FluentDataGrid Items="@userList" ItemKey="(a=>a.Id)" GridTemplateColumns="2fr 2fr 1.2fr" Style="width:100%" ResizableColumns="false">
+                <EmptyContent>No Users</EmptyContent>
+                <ChildContent>
+                    <PropertyColumn Align="Align.Start" Property="@(a => a.UserName)" Sortable="true" />
+                    <PropertyColumn Align="Align.Start" Property="@(a => a.Email)" Sortable="true" />
 
-    <FluentStack Orientation="Orientation.Vertical" Style="width:60%" Width="60%" HorizontalAlignment="HorizontalAlignment.Left">
-        <FluentDataGrid Items="@userList" ItemKey="(a=>a.Id)" Style="width:550px;" GridTemplateColumns="1fr 1fr 0.5fr" ResizableColumns="false">
-            <EmptyContent>No Users</EmptyContent>
-            <ChildContent>
-                <PropertyColumn Align="Align.Start" Property="@(a => a.UserName)" Sortable="true" />
-                <PropertyColumn Align="Align.Start" Property="@(a => a.Email)" Sortable="true" />
+                    <TemplateColumn Title="Actions">
+                        <FluentButton IconStart="@(new Icons.Regular.Size24.PersonInfo())" OnClick="(() => ViewUser(context))"></FluentButton>
+                        <FluentButton IconStart="@(new Icons.Regular.Size24.Edit())"
+                                      OnClick="(()=>ToggleNewUser(isCancel:false, isUpdate:true, context))"></FluentButton>
+                        <FluentButton IconStart="@(new Icons.Regular.Size24.Delete())" OnClick="(() => DeleteUser(context))"></FluentButton>
 
-                <TemplateColumn Title="View">
-                    <FluentButton IconStart="@(new Icons.Regular.Size24.PersonInfo())" OnClick="@(() => ViewUser(context.UserId, context.UserName))"></FluentButton>
-                </TemplateColumn>
-            </ChildContent>
-        </FluentDataGrid>
+                    </TemplateColumn>
+                </ChildContent>
+            </FluentDataGrid>
+        </FluentStack>
     </FluentStack>
+
+    <FluentDivider Role="DividerRole.Separator" Orientation="Orientation.Vertical" Style="min-height: 500px;padding:0 5px"></FluentDivider>
 
     @if (showUserInfo)
     {
-        <FluentStack Orientation="Orientation.Vertical">
+        <FluentStack Orientation="Orientation.Vertical" Style="width:40%;">
             <FluentLabel Typo="Typography.PaneHeader">
-                @curUserName Policy Results:
+                @curUserName (@curUserId) Info:
             </FluentLabel>
             <FluentDivider Style="width:50%" Orientation="Orientation.Horizontal"></FluentDivider>
             @if (policyRes != null)
             {
                 @if (policyRes.Policies.Any())
                 {
-                    <h3 style="color:coral;">Policies</h3>
+                    <h6 style="color:coral;">Policies</h6>
                     <ul>
                         @foreach (var policy in policyRes.Policies)
                         {
@@ -57,7 +68,7 @@
 
                 @if (policyRes.Roles.Any())
                 {
-                    <h3 style="color:coral;">Roles</h3>
+                    <h6 style="color:coral;">Roles</h6>
                     <ul>
                         @foreach (var role in policyRes.Roles)
                         {
@@ -68,7 +79,7 @@
 
                 @if (policyRes.Permissions.Any())
                 {
-                    <h3 style="color:coral;">Permissions</h3>
+                    <h6 style="color:coral;">Permissions</h6>
                     <ul>
                         @foreach (var perm in policyRes.Permissions)
                         {
@@ -86,22 +97,123 @@
         </FluentStack>
     }
 
+    @if (showAddNew)
+    {
+        <FluentStack Orientation="Orientation.Vertical" VerticalAlignment="VerticalAlignment.Center" Style="width:40%;">
+            <FluentTextField Placeholder="Unique User Id" Size="35" @bind-Value="newUser.UserId" Disabled="!isUpdateUser"></FluentTextField>
+            <FluentTextField Placeholder="User Name" Size="35" @bind-Value="newUser.UserName"></FluentTextField>
+            <FluentTextField Placeholder="Email" Size="35" @bind-Value="newUser.Email"></FluentTextField>
+
+            <FluentStack Orientation="Orientation.Horizontal">
+                <FluentButton OnClick="(()=>AddNewUser())" Disabled="string.IsNullOrEmpty(newUser.UserName) && string.IsNullOrEmpty(newUser.Email)"
+                              Appearance="Appearance.Accent">Save</FluentButton>
+                <FluentButton OnClick="(()=>ToggleNewUser(isCancel:true))">Cancel</FluentButton>
+            </FluentStack>
+        </FluentStack>
+    }
+
 </FluentStack>
 @code {
     IQueryable<PolicyDtos.Subject>? userList = null;
     bool showUserInfo = false;
+    bool showAddNew = false;
     PolicyResult? policyRes = null;
     string? curUserName;
+    string? curUserId;
+    PolicyDtos.Subject newUser = new Subject();
+    bool isUpdateUser = false;
     protected override async Task OnInitializedAsync()
+    {
+        await LoadUsers();
+    }
+
+    async Task LoadUsers()
     {
         var allUsers = await UserRepo.GetAllUsers();
         userList = allUsers.AsQueryable();
     }
 
-    async Task ViewUser(string userId, string userName)
+    void ToggleNewUser(bool isCancel, bool isUpdate = false, Subject? user = null)
     {
-        policyRes = await permService.GetPermissions(userId);
-        curUserName = userName;
+        isUpdateUser = isUpdate;
+        if (!isCancel)
+        {
+            showAddNew = true;
+            newUser = new Subject();
+            showUserInfo = false;
+            if (isUpdateUser)
+            {
+                newUser = user;
+            }
+        }
+        else
+        {
+            //newPolicyName = string.Empty;
+            showAddNew = false;
+        }
+    }
+
+    async Task AddNewUser()
+    {
+        if (!isUpdateUser)
+        {
+            var createdUserId = await UserRepo.AddNewUser(newUser);
+            if (!string.IsNullOrEmpty(createdUserId))
+            {
+                toastService.ShowSuccess($"User is created successfully", 5000);
+                showAddNew = false;
+                await LoadUsers();
+            }
+            else
+            {
+                toastService.ShowError("Unable to add the user");
+            }
+        }
+        else
+        {
+            await UpdateUser(newUser);
+        }
+    }
+
+    async Task UpdateUser(Subject user)
+    {
+        var res = await UserRepo.UpdateUser(user);
+        if (res)
+        {
+            toastService.ShowSuccess($"User is updated successfully", 5000);
+            showAddNew = false;
+            await LoadUsers();
+        }
+        else
+        {
+            toastService.ShowError("Unable to add the user");
+        }
+    }
+
+    async Task DeleteUser(Subject user)
+    {
+        var dialog = await dialogService.ShowConfirmationAsync($@"Do you want to delete the user {user.UserName}. This will
+                                delete the roles of this user too", "Yup", "Nope", "Delete User");
+
+        var result = await dialog.Result;
+        var canceled = result.Cancelled;
+        if (!canceled)
+        {
+            bool isDeleted = await UserRepo.DeleteUser(user.Id);
+            if (isDeleted)
+            {
+                toastService.ShowSuccess($"User {user.UserName} is deleted successfully", 5000);
+                await LoadUsers();
+            }
+        }
+    }
+
+    async Task ViewUser(Subject user)
+    {
+        policyRes = await permService.GetPermissions(user.UserId);
+        curUserName = user.UserName;
+        curUserId = user.UserId;
         showUserInfo = true;
+        showAddNew = false;
     }
 }
