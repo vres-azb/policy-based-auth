@@ -1,0 +1,63 @@
+﻿@using PolicyBased.Infra.Persistence.Repositories;
+@using PolicyDtos = PolicyBased.Infra.Dtos;
+@implements IDialogContentComponent<PolicyDtos.Application>
+@inject IUserRepo UserRepo;
+
+<FluentDialogHeader>
+    <FluentLabel Typo="Typography.Header">
+        Add new Application
+    </FluentLabel>
+</FluentDialogHeader>
+<FluentDialogBody>
+    <FluentStack Orientation="Orientation.Vertical">
+        <FluentSelect Items="tenantList" OptionText="(a => a.Name)" OptionValue="(a => a.TenantId.ToString())" @bind-SelectedOption="@selectedTenant" />
+        <FluentTextField Size="31" @bind-Value="newAppName" Placeholder="Application Name"></FluentTextField>
+    </FluentStack>
+</FluentDialogBody>
+
+<FluentDialogFooter>
+    <FluentButton Appearance="Appearance.Accent" OnClick="@Save">Save</FluentButton>
+    <FluentButton Appearance="Appearance.Neutral" OnClick="@Cancel">Cancel</FluentButton>
+</FluentDialogFooter>
+
+@code {
+    string newAppName = string.Empty;
+
+    List<TenantItem> tenantList { get; set; } = new List<TenantItem>()
+    {
+      new TenantItem() { TenantId=1, Name= "Tenant A" },
+      new TenantItem() { TenantId=2, Name= "Tenant B" },
+      new TenantItem() { TenantId=3, Name= "Tenant C" }
+    };
+
+    TenantItem selectedTenant { get; set; } = default!;
+
+    [Parameter]
+    public PolicyDtos.Application Content { get; set; } = default!;
+    [CascadingParameter]
+    public FluentDialog Dialog { get; set; } = default!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        selectedTenant = tenantList.FirstOrDefault();
+    }
+
+    async Task Save()
+    {
+        await UserRepo.AddNewApplication(new PolicyDtos.Application()
+            { Name = newAppName, TenantId = selectedTenant.TenantId });
+        await Dialog.CloseAsync(Content);
+    }
+
+    async Task Cancel()
+    {
+        await Dialog.CancelAsync();
+    }
+
+    public class TenantItem
+    {
+        public int TenantId { get; set; } = default!;
+        public string Name { get; set; } = default!;
+    }
+
+}

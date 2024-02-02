@@ -26,13 +26,14 @@
     <FluentStack Orientation="Orientation.Vertical" VerticalAlignment=VerticalAlignment.Top HorizontalAlignment="HorizontalAlignment.Right" Style="width:50%">
         <FluentButton IconStart="@(new Icons.Regular.Size24.Add())" Appearance="Appearance.Accent" OnClick="(()=>ToggleNewUser(isCancel:false))">New User</FluentButton>
         <FluentStack Orientation="Orientation.Vertical" HorizontalAlignment="HorizontalAlignment.Right" Style="width:100%">
-            <FluentDataGrid Items="@userList" ItemKey="(a=>a.Id)" GridTemplateColumns="2fr 2fr 1.2fr" Style="width:100%" ResizableColumns="false">
+            <FluentDataGrid Items="@userList" ItemKey="(a=>a.Id)" GridTemplateColumns="2fr 2fr 1fr 1.2fr" Style="width:100%" ResizableColumns="false">
                 <EmptyContent>No Users</EmptyContent>
                 <ChildContent>
                     <PropertyColumn Align="Align.Start" Property="@(a => a.UserName)" Sortable="true" />
                     <PropertyColumn Align="Align.Start" Property="@(a => a.Email)" Sortable="true" />
+                    <PropertyColumn Align="Align.Start" Property="@(a => a.TenantId)"  Title="Tenant Id" Sortable="true" />
 
-                    <TemplateColumn Title="Actions">
+                    <TemplateColumn Title="Actions" Align="Align.Center">
                         <FluentButton IconStart="@(new Icons.Regular.Size24.PersonInfo())" OnClick="(() => ViewUser(context))"></FluentButton>
                         <FluentButton IconStart="@(new Icons.Regular.Size24.Edit())"
                                       OnClick="(()=>ToggleNewUser(isCancel:false, isUpdate:true, context))"></FluentButton>
@@ -50,9 +51,10 @@
     {
         <FluentStack Orientation="Orientation.Vertical" Style="width:40%;">
             <FluentLabel Typo="Typography.PaneHeader">
-                @curUserName (@curUserId) Info:
+                @curUserName Info:
             </FluentLabel>
             <FluentDivider Style="width:50%" Orientation="Orientation.Horizontal"></FluentDivider>
+            Subject Id: @curUserId
             @if (policyRes != null)
             {
                 @if (policyRes.Policies.Any())
@@ -93,7 +95,6 @@
                 <FluentLabel>No info</FluentLabel>
             }
 
-
         </FluentStack>
     }
 
@@ -103,6 +104,14 @@
             <FluentTextField Placeholder="Unique User Id" Size="35" @bind-Value="newUser.UserId" Disabled="!isUpdateUser"></FluentTextField>
             <FluentTextField Placeholder="User Name" Size="35" @bind-Value="newUser.UserName"></FluentTextField>
             <FluentTextField Placeholder="Email" Size="35" @bind-Value="newUser.Email"></FluentTextField>
+            @if (isUpdateUser)
+            {
+                <FluentLabel>@selectedTenant.Name</FluentLabel>
+            }
+            else
+            {
+                <FluentSelect Items="tenantList" OptionText="(a => a.Name)" OptionValue="(a => a.TenantId.ToString())" @bind-SelectedOption="@selectedTenant" />
+            }
 
             <FluentStack Orientation="Orientation.Horizontal">
                 <FluentButton OnClick="(()=>AddNewUser())" Disabled="string.IsNullOrEmpty(newUser.UserName) && string.IsNullOrEmpty(newUser.Email)"
@@ -122,6 +131,16 @@
     string? curUserId;
     PolicyDtos.Subject newUser = new Subject();
     bool isUpdateUser = false;
+
+    List<TenantItem> tenantList { get; set; } = new List<TenantItem>()
+    {
+      new TenantItem() { TenantId=1, Name= "Tenant A" },
+      new TenantItem() { TenantId=2, Name= "Tenant B" },
+      new TenantItem() { TenantId=3, Name= "Tenant C" }
+    };
+
+    TenantItem selectedTenant { get; set; } = default!;
+
     protected override async Task OnInitializedAsync()
     {
         await LoadUsers();
@@ -139,16 +158,17 @@
         if (!isCancel)
         {
             showAddNew = true;
+            selectedTenant = tenantList.FirstOrDefault()!;
             newUser = new Subject();
             showUserInfo = false;
             if (isUpdateUser)
             {
                 newUser = user;
+                selectedTenant = tenantList.FirstOrDefault(a => a.TenantId == newUser.TenantId);
             }
         }
         else
         {
-            //newPolicyName = string.Empty;
             showAddNew = false;
         }
     }
@@ -157,6 +177,7 @@
     {
         if (!isUpdateUser)
         {
+            newUser.TenantId = selectedTenant.TenantId;
             var createdUserId = await UserRepo.AddNewUser(newUser);
             if (!string.IsNullOrEmpty(createdUserId))
             {
@@ -215,5 +236,11 @@
         curUserId = user.UserId;
         showUserInfo = true;
         showAddNew = false;
+    }
+
+    public class TenantItem
+    {
+        public int TenantId { get; set; } = default!;
+        public string Name { get; set; } = default!;
     }
 }

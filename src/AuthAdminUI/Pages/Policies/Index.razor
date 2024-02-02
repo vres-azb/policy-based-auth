@@ -33,9 +33,16 @@ else
 
         <FluentStack Orientation="Orientation.Vertical" HorizontalAlignment="HorizontalAlignment.End" Style="width:75%">
 
-            <FluentButton IconStart="@(new Icons.Regular.Size24.Add())" Appearance="Appearance.Accent" OnClick="(()=>ToggleNewPolicy(isCancel:false))">New Policy</FluentButton>
+            <FluentStack Orientation="Orientation.Horizontal" HorizontalAlignment="HorizontalAlignment.End">
 
-            <FluentDataGrid Items="@policyList.AsQueryable()" ItemKey="(a=>a.Id)" ResizableColumns="false" style="width:100%" GridTemplateColumns="0.3fr 1fr">
+                <FluentButton IconStart="@(new Icons.Regular.Size24.Add())" Appearance="Appearance.Accent"
+                              OnClick="@OpenAsync">New App</FluentButton>
+                <FluentButton IconStart="@(new Icons.Regular.Size24.Add())" Appearance="Appearance.Accent"
+                              OnClick="(()=>ToggleNewPolicy(isCancel:false))">Policy</FluentButton>
+            </FluentStack>
+
+            <FluentDataGrid Items="@appPolicyList.AsQueryable()" ItemKey="(a=>a.Id)" ResizableColumns="false" style="width:100%"
+                            GridTemplateColumns="0.3fr 1fr">
                 <EmptyContent>No Applications</EmptyContent>
                 <ChildContent>
                     <PropertyColumn Align="Align.Start" Property="@(a => a.Name)" Title="Application Name" Sortable="true" />
@@ -67,23 +74,25 @@ else
                                                     MarkupString permsNames = (MarkupString)string.Join("<br/>", perms);
                                                 }
                                                 <FluentLabel>@permsNames</FluentLabel>
-                                                </TemplateColumn>
-                                            </ChildContent>
-                                        </FluentDataGrid>
-                                    </TemplateColumn>
-                                </ChildContent>
-                            </FluentDataGrid>
-                        </TemplateColumn>
-                    </ChildContent>
-                </FluentDataGrid>
-            </FluentStack>
+                                            </TemplateColumn>
+                                        </ChildContent>
+                                    </FluentDataGrid>
+                                </TemplateColumn>
+                            </ChildContent>
+                        </FluentDataGrid>
+                    </TemplateColumn>
+                </ChildContent>
 
-            <FluentDivider Role="DividerRole.Separator" Orientation="Orientation.Vertical" Style="height: 500px;"></FluentDivider>
+            </FluentDataGrid>
+        </FluentStack>
 
-            @if (showAddNew)
+        <FluentDivider Role="DividerRole.Separator" Orientation="Orientation.Vertical" Style="height: 500px;"></FluentDivider>
+
+        @if (showAddNewPolicy)
         {
             <FluentStack Orientation="Orientation.Vertical" Style="width:20%;">
-                <FluentTextField Placeholder="Policy Name" Size="25" @bind-Value="newPolicyName"></FluentTextField>
+                <FluentSelect Items="appPolicyList" OptionText="(a=>a.Name)" OptionValue="(a=>a.Id.ToString())" @bind-SelectedOption="@selectedApp"></FluentSelect>
+                <FluentTextField Placeholder="Policy Name" Size="31" @bind-Value="newPolicyName"></FluentTextField>
                 <FluentStack Orientation="Orientation.Horizontal">
                     <FluentButton OnClick="(()=>AddNewPolicy())" Disabled="string.IsNullOrEmpty(newPolicyName)" Appearance="Appearance.Accent">Save</FluentButton>
                     <FluentButton OnClick="(()=>ToggleNewPolicy(isCancel:true))">Cancel</FluentButton>
@@ -100,39 +109,56 @@ else
     </FluentStack>
 }
 @code {
-    List<PolicyDtos.Application>? policyList = new();
+    List<PolicyDtos.Application>? appPolicyList = new();
     int currentAppId;
-    bool showAddNew = false;
+    bool showAddNewPolicy = false;
     string newPolicyName = string.Empty;
     string newPolicyEditUrl = string.Empty;
     bool isLoading = true;
+    PolicyDtos.Application selectedApp { get; set; } = default!;
     protected override async Task OnInitializedAsync()
     {
-        var allPolicies = await UserRepo.GetPolicies();
-        policyList = allPolicies;
+        await LoadAppPolicies();
         isLoading = false;
+    }
+
+    async Task LoadAppPolicies()
+    {
+        var allPolicies = await UserRepo.GetPolicies();
+        appPolicyList = allPolicies;
+        if (allPolicies?.Any() == true)
+        {
+            selectedApp = allPolicies.FirstOrDefault()!;
+        }
     }
 
     void ToggleNewPolicy(bool isCancel)
     {
         if (!isCancel)
         {
-            showAddNew = true;
+            showAddNewPolicy = true;
         }
         else
         {
             newPolicyName = string.Empty;
-            showAddNew = false;
+            showAddNewPolicy = false;
+
         }
     }
 
     async Task AddNewPolicy()
     {
-        int newPolicyId = await UserRepo.AddNewPolicy(newPolicyName);
-        newPolicyEditUrl = $"/Policies/Edit/{newPolicyId}";
-
-        policyList.FirstOrDefault(a => a.Id == 1).Policies.Add(new PolicyDtos.Policy() { Name = newPolicyName, Id = newPolicyId });
-        //StateHasChanged();
+        if (selectedApp != null)
+        {
+            int newPolicyId = await UserRepo.AddNewPolicy(newPolicyName, selectedApp.Id);
+            newPolicyEditUrl = $"/Policies/Edit/{newPolicyId}";
+            appPolicyList.FirstOrDefault(a => a.Id == selectedApp.Id).Policies.Add(new PolicyDtos.Policy() { Name = newPolicyName, Id = newPolicyId });
+            toastService.ShowSuccess($"Policy {newPolicyName} added successfully");
+        }
+        else
+        {
+            toastService.ShowError("Choose the Application Id");
+        }
     }
 
     async Task DeletePolicy(int policyId, string policyName)
@@ -148,13 +174,51 @@ else
             {
                 toastService.ShowSuccess($"Policy {policyName} deleted", 5000);
                 var allPolicies = await UserRepo.GetPolicies();
-                policyList = allPolicies;
+                appPolicyList = allPolicies;
                 StateHasChanged();
             }
             else
             {
                 toastService.ShowError($"Error on deleting the policy {policyName}", 5000);
             }
+        }
+
+    }
+
+    PolicyDtos.Application DialogData { get; set; } = new PolicyDtos.Application();
+
+    private async Task OpenAsync()
+    {
+        var dialog = await dialogService.ShowDialogAsync<NewApplicationDialog>(DialogData, new DialogParameters()
+            {
+                Height = "240px",
+                Title = $"Add New Application",
+                PreventDismissOnOverlayClick = true,
+                //OnDialogResult = dialogService.CreateDialogCallback(this, HandleDialog),
+                PreventScroll = true,
+            });
+
+        var result = await dialog.Result;
+        if (!result.Cancelled && result.Data != null)
+        {
+            DialogData = (PolicyDtos.Application)result.Data;
+            toastService.ShowSuccess($"Application {DialogData.Name} is created");
+            await LoadAppPolicies();
+        }
+    }
+
+    private async Task HandleDialog(DialogResult result)
+    {
+        if (result.Cancelled)
+        {
+            return;
+        }
+
+        if (result.Data is not null)
+        {
+            var app = result.Data as PolicyDtos.Application;
+            StateHasChanged();
+            return;
         }
 
     }

@@ -7,5 +7,6 @@
         public string UserName { get; set; } = default!;
         public string Email { get; set; } = default!;
         public bool IsSelected { get; set; } = default;
+        public int TenantId { get; set; } = default!;
     }
 }

@@ -8,7 +8,7 @@ namespace PolicyBased.Infra.Persistence.Repositories
         Task<List<PolicyDtos.Subject>> GetAllUsers();
         Task<PolicyDtos.Policy> GetPolicy(int policyId);
         Task<bool> SavePolicy(PolicyDtos.Policy policy);
-        Task<int> AddNewPolicy(string policyName);
+        Task<int> AddNewPolicy(string policyName, int appId);
         Task<bool> DeletePolicy(int policyId);
         Task<int> AddNewRole(int policyId, string roleName);
         Task<int> AddNewPermission(int policyId, string permName);
@@ -17,5 +17,6 @@ namespace PolicyBased.Infra.Persistence.Repositories
         Task<string> AddNewUser(PolicyDtos.Subject userInfo);
         Task<bool> UpdateUser(PolicyDtos.Subject userInfo);
         Task<bool> DeleteUser(int userId);
+        Task<int> AddNewApplication(PolicyDtos.Application application);
     }
 }

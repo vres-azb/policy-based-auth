@@ -17,7 +17,14 @@ public class UserRepo : IUserRepo
     public async Task<List<PolicyDtos.Subject>> GetAllUsers()
     {
         var allUsers = await _dbContext.Users.Where(a => !a.IsDeleted).ToListAsync();
-        return allUsers.Select(a => new PolicyDtos.Subject() { Id = a.Id, UserName = a.UserName, Email = a.Email, UserId = a.UserId.ToString() }).ToList();
+        return allUsers.ConvertAll(a => new PolicyDtos.Subject()
+        {
+            Id = a.Id,
+            UserName = a.UserName,
+            Email = a.Email,
+            UserId = a.UserId,
+            TenantId = a.TenantId
+        });
     }
 
     public async Task<List<PolicyDtos.Application>> GetPolicies()
@@ -198,12 +205,12 @@ public class UserRepo : IUserRepo
         }
     }
 
-    public async Task<int> AddNewPolicy(string policyName)
+    public async Task<int> AddNewPolicy(string policyName, int appId)
     {
         Policy policy = new()
         {
             Name = policyName,
-            ApplicationId = 1
+            ApplicationId = appId
         };
         await _dbContext.AddAsync(policy);
         await _dbContext.SaveChangesAsync();
@@ -319,6 +326,23 @@ public class UserRepo : IUserRepo
             return true;
         }
         return false;
+    }
+
+    public async Task<int> AddNewApplication(PolicyDtos.Application application)
+    {
+        if (application?.Name != string.Empty)
+        {
+            Application app = new()
+            {
+                Name = application.Name,
+                TenantId = application.TenantId
+            };
+            await _dbContext.AddAsync(app);
+            await _dbContext.SaveChangesAsync();
+            return app.Id;
+        }
+
+        return default;
     }
 
 }

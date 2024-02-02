@@ -10,17 +10,18 @@ namespace PolicyBased.Infra.Dtos
         /// <summary>
         /// Represents an Application Identifier.
         /// </summary>
-        public long Id { get; set; }
+        public int Id { get; set; } = default!;
 
         /// <summary>
         /// The name of the application.
         /// </summary>
-        public string Name { get; set; }
+        public string Name { get; set; } = default!;
 
         /// <summary>
         /// Represents the policies associated to a Business Application.
         /// </summary>
         public List<Policy> Policies { get; set; }
+        public int TenantId { get; set; } = default!;
 
 
         // TODO: remove this later or refactor to a better design...
